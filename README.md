@@ -55,5 +55,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - Google Fonts for the `Roboto` font.
 
 ## Demo
-https://yapweijun1996.github.io/SG-Bus-Arrival-Time-By-Bus-Code/?id=70049
+https://yapweijun1996.github.io/SG-Bus-Arrival-Time-By-Bus-Code/
 
