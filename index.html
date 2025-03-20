@@ -31,6 +31,7 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 <style>
 /* Reset and Base Styles */
 * {
@@ -168,16 +169,23 @@ header {
 }
 
 .service h2 {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   font-size: 1.6rem;
   border-bottom: 1px solid #000;
   padding-bottom: 5px;
   color: #000;
 }
 
+.service h2 small {
+  font-size: 10px;
+  display: block;
+  margin-top: 2px;
+}
+
 .service-table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 10px;
 }
 
 .service-table th, .service-table td {
@@ -191,6 +199,11 @@ header {
   background: #fff;
   font-weight: 500;
   border: 1px solid #000;
+}
+
+/* Styling for success rows when Monitored is Yes */
+.success-row {
+  background-color: #d4edda!important;
 }
 
 /***** Mobile Responsive Adjustments *****/
@@ -225,6 +238,7 @@ header {
     font-size: 0.9rem;
   }
 }
+
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -237,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const loadingDiv = document.getElementById('loading');
   const errorDiv = document.getElementById('error');
 
-  // Set default if id not provided
+  // Set default id if not provided
   if (!id) {
     id = DEFAULT_ID;
     busIdInput.value = DEFAULT_ID;
@@ -246,24 +260,45 @@ document.addEventListener('DOMContentLoaded', function() {
     busIdInput.value = id;
   }
 
-  fetchAndDisplay(id);
+  // Polling: Fetch bus arrival data every 1 minute without refreshing the page
+  let pollingInterval = setInterval(() => {
+    fetchAndDisplay(id, false);
+  }, 60000);
 
+  // On form submit, update id and restart polling
   idForm.addEventListener('submit', function(event) {
     event.preventDefault();
     let newId = busIdInput.value.trim();
     if (!newId) {
       newId = DEFAULT_ID;
     }
+    // Update URL without reloading
     window.history.pushState(null, '', `?id=${encodeURIComponent(newId)}`);
-    fetchAndDisplay(newId);
+    id = newId;
+    // Clear services and error messages
+    servicesDiv.innerHTML = '';
+    errorDiv.classList.add('hidden');
+    // Reset loading text
+    loadingDiv.textContent = 'Loading bus arrival data, please wait...';
+    loadingDiv.classList.remove('hidden');
+    // Restart polling for the new ID
+    clearInterval(pollingInterval);
+    pollingInterval = setInterval(() => {
+      fetchAndDisplay(id, false);
+    }, 60000);
+    // Immediately fetch data
+    fetchAndDisplay(id, true);
   });
 
-  function fetchAndDisplay(id) {
-    // Reset any previous animations or states on the loading div
-    loadingDiv.classList.remove('hidden');
-    loadingDiv.classList.remove('fade-out');
+  // Initial data fetch
+  fetchAndDisplay(id, true);
+
+  function fetchAndDisplay(id, showLoading) {
+    if (showLoading) {
+      loadingDiv.classList.remove('hidden');
+      loadingDiv.textContent = 'Loading bus arrival data, please wait...';
+    }
     errorDiv.classList.add('hidden');
-    servicesDiv.innerHTML = '';
 
     const apiUrl = `https://arrivelah2.busrouter.sg/?id=${encodeURIComponent(id)}`;
     fetch(apiUrl)
@@ -274,13 +309,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
       })
       .then(data => {
-        // Start fade-out animation for the loading message
-        loadingDiv.classList.add('fade-out');
-        // Wait for the animation to finish before hiding the element
-        setTimeout(() => {
+        // Hide loading if shown
+        if (showLoading) {
           loadingDiv.classList.add('hidden');
-          loadingDiv.classList.remove('fade-out');
-        }, 1000);
+        }
         displayServices(data);
       })
       .catch(error => {
@@ -292,6 +324,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Display bus arrival services and trips in a table format
   function displayServices(data) {
+    // Clear previous services
+    servicesDiv.innerHTML = '';
     if (!data.services || data.services.length === 0) {
       servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found at this stop.</p>';
       return;
@@ -301,18 +335,18 @@ document.addEventListener('DOMContentLoaded', function() {
       const serviceContainer = document.createElement('div');
       serviceContainer.className = 'service';
 
-      // Header for the service
+      // Header for the service with additional SEA and First Bus Arrival info
       const header = document.createElement('h2');
-      header.textContent = `Service ${service.no} from ${service.operator}`;
+      header.innerHTML = `Service ${service.no} from ${service.operator}<br><small>SEA - First Bus Arrival</small>`;
       serviceContainer.appendChild(header);
 
       // Create table for trip information
       const table = document.createElement('table');
       table.className = 'service-table';
 
-      // Create the header row for the table
+      // Create header row for the table with: Time, Duration (min), Load & Info, Monitored
       const headerRow = document.createElement('tr');
-      const headers = ['Arrival', 'Time', 'Duration', 'Load', 'Monitored'];
+      const headers = ['Time', 'Duration (min)', 'Load & Info', 'Monitored'];
       headers.forEach(text => {
         const th = document.createElement('th');
         th.textContent = text;
@@ -334,32 +368,33 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tripData) {
           const row = document.createElement('tr');
           
-          // Arrival label
-          const arrivalTd = document.createElement('td');
-          arrivalTd.textContent = tripLabels[key];
-          row.appendChild(arrivalTd);
-
           // Time formatted
           const timeTd = document.createElement('td');
           const time = new Date(tripData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           timeTd.textContent = time;
           row.appendChild(timeTd);
 
-          // Duration (in minutes) column
+          // Duration in minutes
           const durationTd = document.createElement('td');
           const duration = Math.ceil(tripData.duration_ms / 60000);
-          durationTd.textContent = duration + ' minutes';
+          durationTd.textContent = duration;
           row.appendChild(durationTd);
 
-          // Load information column
+          // Load & Info column with load info on top, and smaller trip label below
           const loadTd = document.createElement('td');
-          loadTd.textContent = tripData.load;
+          loadTd.innerHTML = tripData.load + '<br><font style="font-size:10px">' + tripLabels[key] + '</font>';
           row.appendChild(loadTd);
 
-          // Monitored information column
+          // Monitored column
           const monitoredTd = document.createElement('td');
-          monitoredTd.textContent = tripData.monitored ? 'Yes' : 'No';
+          const monitoredText = tripData.monitored ? 'Yes' : 'No';
+          monitoredTd.textContent = monitoredText;
           row.appendChild(monitoredTd);
+
+          // If monitored is Yes, add success styling to the row
+          if(tripData.monitored){
+            row.classList.add('success-row');
+          }
 
           table.appendChild(row);
         }
@@ -369,5 +404,11 @@ document.addEventListener('DOMContentLoaded', function() {
       servicesDiv.appendChild(serviceContainer);
     });
   }
+
+  // Clean up polling if the user navigates away
+  window.addEventListener('beforeunload', () => {
+    clearInterval(pollingInterval);
+  });
 });
+
 </script>
