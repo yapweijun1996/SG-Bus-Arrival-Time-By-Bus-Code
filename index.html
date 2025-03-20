@@ -23,13 +23,15 @@
     </div>
   </section>
   <section id="content">
-    <div id="loading" class="hidden">Loading upcoming bus arrivals...</div>
+    <div id="loading" class="hidden">Loading bus arrival data, please wait...</div>
     <div id="error" class="hidden"></div>
     <div id="services"></div>
   </section>
+  
   <script src="script.js"></script>
 </body>
 </html>
+
 <style>
 /* Reset and Base Styles */
 * {
@@ -40,8 +42,8 @@
 
 body {
   font-family: 'Roboto', sans-serif;
-  background: #eff3f6;
-  color: #444;
+  background: #fff;
+  color: #111;
   line-height: 1.6;
   display: flex;
   flex-direction: column;
@@ -52,11 +54,11 @@ body {
 /* Header Styling */
 header {
   width: 100%;
-  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  background: #000;
   color: #fff;
   padding: 30px 15px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .header-content h1 {
@@ -66,7 +68,7 @@ header {
 
 .header-content p {
   font-size: 1rem;
-  opacity: 0.95;
+  opacity: 0.85;
 }
 
 /* Search Section Styling */
@@ -81,9 +83,10 @@ header {
   background: #fff;
   padding: 25px;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: 90%;
   max-width: 500px;
+  border: 1px solid #000;
 }
 
 .search-section form {
@@ -94,13 +97,13 @@ header {
 .search-section label {
   font-weight: 500;
   margin-bottom: 10px;
-  color: #333;
+  color: #111;
 }
 
 .search-section input {
   padding: 14px 18px;
   font-size: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid #000;
   border-radius: 6px;
   margin-bottom: 20px;
   outline: none;
@@ -108,12 +111,12 @@ header {
 }
 
 .search-section input:focus {
-  border-color: #4CAF50;
+  border-color: #555;
 }
 
 .search-section button {
   padding: 14px 18px;
-  background-color: #4CAF50;
+  background-color: #000;
   color: #fff;
   font-size: 1rem;
   font-weight: 500;
@@ -124,7 +127,7 @@ header {
 }
 
 .search-section button:hover {
-  background-color: #43A047;
+  background-color: #333;
   transform: translateY(-2px);
 }
 
@@ -145,56 +148,43 @@ header {
   color: #d9534f;
 }
 
+/* Service Card Styling */
 .service {
   background: #fff;
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.service:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid #000;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
 .service h2 {
   margin-bottom: 15px;
   font-size: 1.6rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #000;
   padding-bottom: 5px;
-  color: #4CAF50;
+  color: #000;
 }
 
-.trip {
-  margin-bottom: 15px;
+.service-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.trip-header {
-  display: flex;
-  justify-content: space-between;
-  background: #f9f9f9;
+.service-table th, .service-table td {
   padding: 10px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 1rem;
-  color: #333;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  color: #111;
 }
 
-.trip-details {
-  padding: 8px 10px;
-  font-size: 0.95rem;
-  color: #555;
-  border-left: 3px solid #4CAF50;
-  margin-top: 5px;
+.service-table th {
+  background: #fff;
+  font-weight: 500;
+  border: 1px solid #000;
 }
 
-.hidden {
-  display: none;
-}
-
-/* Mobile Responsive Adjustments */
+/***** Mobile Responsive Adjustments *****/
 @media (max-width: 600px) {
   header {
     padding: 20px 10px;
@@ -217,14 +207,16 @@ header {
     padding: 15px;
   }
 
-  .trip-header {
-    font-size: 0.95rem;
+  .service h2 {
+    font-size: 1.4rem;
   }
 
-  .trip-details {
+  .service-table th, .service-table td {
+    padding: 8px;
     font-size: 0.9rem;
   }
 }
+
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -282,6 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
 
+  // Display bus arrival services and trips in a table format
   function displayServices(data) {
     if (!data.services || data.services.length === 0) {
       servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found at this stop.</p>';
@@ -289,15 +282,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     data.services.forEach(service => {
-      const serviceDiv = document.createElement('div');
-      serviceDiv.className = 'service';
+      const serviceContainer = document.createElement('div');
+      serviceContainer.className = 'service';
 
-      // Service header: showing service number and operator in a friendly manner
+      // Header for the service
       const header = document.createElement('h2');
       header.textContent = `Service ${service.no} from ${service.operator}`;
-      serviceDiv.appendChild(header);
+      serviceContainer.appendChild(header);
 
-      // Define friendly names for trips
+      // Create table for trip information
+      const table = document.createElement('table');
+      table.className = 'service-table';
+
+      // Create the header row for the table
+      const headerRow = document.createElement('tr');
+      const headers = ['Arrival', 'Time', 'Duration', 'Load', 'Monitored'];
+      headers.forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        headerRow.appendChild(th);
+      });
+      table.appendChild(headerRow);
+
+      // Define friendly names for arrival orders
       const tripLabels = {
         next: 'First Bus Arrival',
         subsequent: 'Second Bus Arrival',
@@ -305,33 +312,45 @@ document.addEventListener('DOMContentLoaded', function() {
         next3: 'Fourth Bus Arrival'
       };
 
+      // Iterate through each trip information
       Object.keys(tripLabels).forEach(key => {
         const tripData = service[key];
         if (tripData) {
-          const tripContainer = document.createElement('div');
-          tripContainer.className = 'trip';
+          const row = document.createElement('tr');
+          
+          // Arrival label
+          const arrivalTd = document.createElement('td');
+          arrivalTd.textContent = tripLabels[key];
+          row.appendChild(arrivalTd);
 
-          // Format time to display hours and minutes
+          // Time formatted
+          const timeTd = document.createElement('td');
           const time = new Date(tripData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          timeTd.textContent = time;
+          row.appendChild(timeTd);
+
+          // Duration (in minutes) column
+          const durationTd = document.createElement('td');
           const duration = Math.ceil(tripData.duration_ms / 60000);
+          durationTd.textContent = duration + ' minutes';
+          row.appendChild(durationTd);
 
-          // First line: Label, Time and duration in columns
-          const tripHeader = document.createElement('div');
-          tripHeader.className = 'trip-header';
-          tripHeader.innerHTML = `<span>${tripLabels[key]}:</span> <span>${time}</span> <span>${duration} minutes</span>`;
-          tripContainer.appendChild(tripHeader);
+          // Load information column
+          const loadTd = document.createElement('td');
+          loadTd.textContent = tripData.load;
+          row.appendChild(loadTd);
 
-          // Second line: details on load and monitored
-          const tripDetails = document.createElement('div');
-          tripDetails.className = 'trip-details';
-          tripDetails.textContent = `- Load: ${tripData.load}, Monitored: ${tripData.monitored ? 'Yes' : 'No'}`;
-          tripContainer.appendChild(tripDetails);
+          // Monitored information column
+          const monitoredTd = document.createElement('td');
+          monitoredTd.textContent = tripData.monitored ? 'Yes' : 'No';
+          row.appendChild(monitoredTd);
 
-          serviceDiv.appendChild(tripContainer);
+          table.appendChild(row);
         }
       });
 
-      servicesDiv.appendChild(serviceDiv);
+      serviceContainer.appendChild(table);
+      servicesDiv.appendChild(serviceContainer);
     });
   }
 });
