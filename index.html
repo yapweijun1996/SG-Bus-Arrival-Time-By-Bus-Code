@@ -23,7 +23,7 @@
     </div>
   </section>
   <section id="content">
-    <div id="loading" class="hidden">Loading bus arrival data, please wait...</div>
+    <div id="loading">Loading bus arrival data, please wait...</div>
     <div id="error" class="hidden"></div>
     <div id="services"></div>
   </section>
@@ -31,7 +31,6 @@
   <script src="script.js"></script>
 </body>
 </html>
-
 <style>
 /* Reset and Base Styles */
 * {
@@ -148,6 +147,16 @@ header {
   color: #d9534f;
 }
 
+.hidden {
+  display: none;
+}
+
+/* Fade-out animation for the loading message */
+.fade-out {
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
+
 /* Service Card Styling */
 .service {
   background: #fff;
@@ -216,7 +225,6 @@ header {
     font-size: 0.9rem;
   }
 }
-
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -251,7 +259,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   function fetchAndDisplay(id) {
+    // Reset any previous animations or states on the loading div
     loadingDiv.classList.remove('hidden');
+    loadingDiv.classList.remove('fade-out');
     errorDiv.classList.add('hidden');
     servicesDiv.innerHTML = '';
 
@@ -264,7 +274,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
       })
       .then(data => {
-        loadingDiv.classList.add('hidden');
+        // Start fade-out animation for the loading message
+        loadingDiv.classList.add('fade-out');
+        // Wait for the animation to finish before hiding the element
+        setTimeout(() => {
+          loadingDiv.classList.add('hidden');
+          loadingDiv.classList.remove('fade-out');
+        }, 1000);
         displayServices(data);
       })
       .catch(error => {
@@ -354,5 +370,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
 </script>
