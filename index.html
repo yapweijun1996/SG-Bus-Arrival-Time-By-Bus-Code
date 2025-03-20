@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +11,7 @@
   <header>
     <div class="header-content">
       <h1>Bus Arrival Information</h1>
-      <p>Enter a bus stop ID below to see the upcoming bus arrivals. If left empty, it defaults to 70049.</p>
+      <p>Enter a bus stop ID below to see the upcoming bus arrivals. If left empty, it defaults to 70049. Optionally filter by Bus Service Number.</p>
     </div>
   </header>
   <section class="search-section">
@@ -18,6 +19,8 @@
       <form id="idForm">
         <label for="busId">Bus Stop ID</label>
         <input type="text" id="busId" name="busId" placeholder="70049">
+        <label for="busNo">Bus Service Filter (Optional)</label>
+        <input type="text" id="busNo" name="busNo" placeholder="e.g., 135">
         <button type="submit">Check Arrival</button>
       </form>
     </div>
@@ -31,7 +34,6 @@
   <script src="script.js"></script>
 </body>
 </html>
-
 <style>
 /* Reset and Base Styles */
 * {
@@ -174,6 +176,9 @@ header {
   border-bottom: 1px solid #000;
   padding-bottom: 5px;
   color: #000;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .service h2 small {
@@ -238,14 +243,19 @@ header {
     font-size: 0.9rem;
   }
 }
-
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const DEFAULT_ID = '70049';
+  const POLLING_INTERVAL_MS = 15000; // 15 seconds
+
+  // Get URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   let id = urlParams.get('id');
+  let busNo = urlParams.get('bus_no');
+
   const busIdInput = document.getElementById('busId');
+  const busNoInput = document.getElementById('busNo');
   const idForm = document.getElementById('idForm');
   const servicesDiv = document.getElementById('services');
   const loadingDiv = document.getElementById('loading');
@@ -255,45 +265,63 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!id) {
     id = DEFAULT_ID;
     busIdInput.value = DEFAULT_ID;
-    window.history.replaceState(null, '', `?id=${encodeURIComponent(DEFAULT_ID)}`);
+    urlParams.set('id', DEFAULT_ID);
+    window.history.replaceState(null, '', `?${urlParams.toString()}`);
   } else {
     busIdInput.value = id;
   }
 
-  // Polling: Fetch bus arrival data every 1 minute without refreshing the page
-  let pollingInterval = setInterval(() => {
-    fetchAndDisplay(id, false);
-  }, 60000);
+  // Set busNo input if provided
+  if (busNo) {
+    busNoInput.value = busNo;
+  }
 
-  // On form submit, update id and restart polling
+  // Polling: Fetch bus arrival data every 15 seconds without refreshing the page
+  let pollingInterval = setInterval(() => {
+    fetchAndDisplay(id, busNo, false);
+  }, POLLING_INTERVAL_MS);
+
+  // On form submit, update id & busNo and restart polling
   idForm.addEventListener('submit', function(event) {
     event.preventDefault();
     let newId = busIdInput.value.trim();
     if (!newId) {
       newId = DEFAULT_ID;
     }
+    let newBusNo = busNoInput.value.trim();
+
     // Update URL without reloading
-    window.history.pushState(null, '', `?id=${encodeURIComponent(newId)}`);
+    urlParams.set('id', newId);
+    if (newBusNo) {
+      urlParams.set('bus_no', newBusNo);
+    } else {
+      urlParams.delete('bus_no');
+    }
+    window.history.pushState(null, '', `?${urlParams.toString()}`);
+
     id = newId;
+    busNo = newBusNo;
+    
     // Clear services and error messages
     servicesDiv.innerHTML = '';
     errorDiv.classList.add('hidden');
     // Reset loading text
     loadingDiv.textContent = 'Loading bus arrival data, please wait...';
     loadingDiv.classList.remove('hidden');
-    // Restart polling for the new ID
+
+    // Restart polling for the new id
     clearInterval(pollingInterval);
     pollingInterval = setInterval(() => {
-      fetchAndDisplay(id, false);
-    }, 60000);
+      fetchAndDisplay(id, busNo, false);
+    }, POLLING_INTERVAL_MS);
     // Immediately fetch data
-    fetchAndDisplay(id, true);
+    fetchAndDisplay(id, busNo, true);
   });
 
   // Initial data fetch
-  fetchAndDisplay(id, true);
+  fetchAndDisplay(id, busNo, true);
 
-  function fetchAndDisplay(id, showLoading) {
+  function fetchAndDisplay(id, busNoFilter, showLoading) {
     if (showLoading) {
       loadingDiv.classList.remove('hidden');
       loadingDiv.textContent = 'Loading bus arrival data, please wait...';
@@ -309,11 +337,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
       })
       .then(data => {
-        // Hide loading if shown
         if (showLoading) {
           loadingDiv.classList.add('hidden');
         }
-        displayServices(data);
+        displayServices(data, busNoFilter);
       })
       .catch(error => {
         loadingDiv.classList.add('hidden');
@@ -322,9 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
 
-  // Display bus arrival services and trips in a table format
-  function displayServices(data) {
-    // Clear previous services
+  // Display bus arrival services and trips in a table format.
+  // If a busNoFilter is provided, only show services matching that bus number.
+  function displayServices(data, busNoFilter) {
     servicesDiv.innerHTML = '';
     if (!data.services || data.services.length === 0) {
       servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found at this stop.</p>';
@@ -332,6 +359,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     data.services.forEach(service => {
+      // If busNoFilter is set, filter out non matching services
+      if (busNoFilter && service.no !== busNoFilter) {
+        return;
+      }
+
       const serviceContainer = document.createElement('div');
       serviceContainer.className = 'service';
 
@@ -382,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           // Load & Info column with load info on top, and smaller trip label below
           const loadTd = document.createElement('td');
-          loadTd.innerHTML = tripData.load + '<br><font style="font-size:10px">' + tripLabels[key] + '</font>';
+          loadTd.innerHTML = tripData.load + '<br><span style="font-size:10px">' + tripLabels[key] + '</span>';
           row.appendChild(loadTd);
 
           // Monitored column
@@ -403,6 +435,11 @@ document.addEventListener('DOMContentLoaded', function() {
       serviceContainer.appendChild(table);
       servicesDiv.appendChild(serviceContainer);
     });
+
+    // If no service was added and a filter is applied then show a not found message
+    if (servicesDiv.innerHTML.trim() === '') {
+      servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found for service ' + busNoFilter + ' at this stop.</p>';
+    }
   }
 
   // Clean up polling if the user navigates away
@@ -410,5 +447,4 @@ document.addEventListener('DOMContentLoaded', function() {
     clearInterval(pollingInterval);
   });
 });
-
 </script>
