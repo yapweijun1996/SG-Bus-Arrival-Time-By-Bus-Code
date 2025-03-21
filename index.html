@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -181,12 +180,6 @@ header {
   text-overflow: ellipsis;
 }
 
-.service h2 small {
-  font-size: 10px;
-  display: block;
-  margin-top: 2px;
-}
-
 .service-table {
   width: 100%;
   border-collapse: collapse;
@@ -198,12 +191,16 @@ header {
   border-bottom: 1px solid #ddd;
   text-align: left;
   color: #111;
+  white-space: nowrap; /* Ensure labels remain in one line */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .service-table th {
   background: #fff;
   font-weight: 500;
   border: 1px solid #000;
+  font-size: 1rem;
 }
 
 /* Styling for success rows when Monitored is Yes */
@@ -235,14 +232,15 @@ header {
   }
 
   .service h2 {
-    font-size: 1.4rem;
+    font-size: 5vw;
   }
 
   .service-table th, .service-table td {
     padding: 8px;
-    font-size: 0.9rem;
+    font-size: 3vw;
   }
 }
+
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -367,9 +365,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const serviceContainer = document.createElement('div');
       serviceContainer.className = 'service';
 
-      // Header for the service with additional SEA and First Bus Arrival info
+      // Header for the service without the extra small text
       const header = document.createElement('h2');
-      header.innerHTML = `Service ${service.no} from ${service.operator}<br><small>SEA - First Bus Arrival</small>`;
+      header.textContent = `Service ${service.no} from ${service.operator}`;
       serviceContainer.appendChild(header);
 
       // Create table for trip information
@@ -412,9 +410,9 @@ document.addEventListener('DOMContentLoaded', function() {
           durationTd.textContent = duration;
           row.appendChild(durationTd);
 
-          // Load & Info column with load info on top, and smaller trip label below
+          // Load & Info column with load info on top and a smaller trip label below
           const loadTd = document.createElement('td');
-          loadTd.innerHTML = tripData.load + '<br><span style="font-size:10px">' + tripLabels[key] + '</span>';
+          loadTd.innerHTML = tripData.load + '<br><span style="font-size:10px; white-space:nowrap;">' + tripLabels[key] + '</span>';
           row.appendChild(loadTd);
 
           // Monitored column
@@ -447,4 +445,5 @@ document.addEventListener('DOMContentLoaded', function() {
     clearInterval(pollingInterval);
   });
 });
+
 </script>
