@@ -236,7 +236,7 @@ header {
   }
 
   .service-table th, .service-table td {
-    padding: 8px;
+    padding: clamp(2px, 1vw, 8px);
     font-size: 3vw;
   }
 }
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           // Load & Info column with load info on top and a smaller trip label below
           const loadTd = document.createElement('td');
-          loadTd.innerHTML = tripData.load + '<br><span style="font-size:1.5vw; white-space:nowrap;">' + tripLabels[key] + '</span>';
+          loadTd.innerHTML = tripData.load + '<br><span style="font-size: clamp(3px, 2vw, 12px); white-space:nowrap;">' + tripLabels[key] + '</span>';
           row.appendChild(loadTd);
 
           // Monitored column
