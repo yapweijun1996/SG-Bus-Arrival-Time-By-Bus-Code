@@ -232,7 +232,7 @@ header {
   }
 
   .service h2 {
-    font-size: 5vw;
+    font-size: 6vw;
   }
 
   .service-table th, .service-table td {
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           // Load & Info column with load info on top and a smaller trip label below
           const loadTd = document.createElement('td');
-          loadTd.innerHTML = tripData.load + '<br><span style="font-size:10px; white-space:nowrap;">' + tripLabels[key] + '</span>';
+          loadTd.innerHTML = tripData.load + '<br><span style="font-size:1.5vw; white-space:nowrap;">' + tripLabels[key] + '</span>';
           row.appendChild(loadTd);
 
           // Monitored column
