@@ -493,6 +493,30 @@
 						serviceContainer.appendChild(table);
 						servicesDiv.appendChild(serviceContainer);
 					});
+					
+					// Attach click event to all service elements
+					document.querySelectorAll('.service').forEach(service => {
+						service.addEventListener('click', function() {
+							const busNo = this.getAttribute('data-id');
+							console.log(`Fetching data for Service ${busNo}`);
+
+							// Apply transition to the service div and all child elements
+							this.style.transition = 'background-color 0.5s ease-in-out';
+							this.style.backgroundColor = 'black';
+
+							// Apply transition to all child elements
+							this.querySelectorAll('*').forEach(child => {
+								child.style.transition = 'background-color 0.3s ease-in-out';
+								child.style.backgroundColor = 'black';
+							});
+
+							// Change everything back to white after 0.5s
+							setTimeout(() => {
+								fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
+							}, 600);
+						});
+					});
+			
 					if (servicesDiv.innerHTML.trim() === '') {
 						servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found for service filter provided.</p>';
 					}
