@@ -1,449 +1,475 @@
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bus Arrival Information</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <header>
-    <div class="header-content">
-      <h1>Bus Arrival Information</h1>
-      <p>Enter a bus stop ID below to see the upcoming bus arrivals. If left empty, it defaults to 70049. Optionally filter by Bus Service Number.</p>
-    </div>
-  </header>
-  <section class="search-section">
-    <div class="form-container">
-      <form id="idForm">
-        <label for="busId">Bus Stop ID</label>
-        <input type="text" id="busId" name="busId" placeholder="70049">
-        <label for="busNo">Bus Service Filter (Optional)</label>
-        <input type="text" id="busNo" name="busNo" placeholder="e.g., 135">
-        <button type="submit">Check Arrival</button>
-      </form>
-    </div>
-  </section>
-  <section id="content">
-    <div id="loading">Loading bus arrival data, please wait...</div>
-    <div id="error" class="hidden"></div>
-    <div id="services"></div>
-  </section>
-  
-  <script src="script.js"></script>
-</body>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Bus Arrival Information</title>
+		<link rel="stylesheet" href="styles.css">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+	</head>
+	<body>
+		<header>
+			<div class="header-content">
+				<h1>Bus Arrival Information</h1>
+				<p>Enter a bus stop ID below to see the upcoming bus arrivals. If left empty, it defaults to 70049. Optionally filter by Bus Service Number.</p>
+			</div>
+		</header>
+		<section class="search-section">
+			<div class="form-container">
+				<form id="idForm">
+					<label for="busId">Bus Stop ID</label>
+					<input type="text" id="busId" name="busId" placeholder="70049">
+					<label for="busNo">Bus Service Filter (Optional)</label>
+					<input type="text" id="busNo" name="busNo" placeholder="e.g., 135">
+					<button type="submit">Check Arrival</button>
+				</form>
+			</div>
+		</section>
+		<section id="content">
+			<div id="loading">Loading bus arrival data, please wait...</div>
+			<div id="error" class="hidden"></div>
+			<div id="services"></div>
+		</section>
+		
+		<script src="script.js"></script>
+	</body>
 </html>
 <style>
-/* Reset and Base Styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Roboto', sans-serif;
-  background: #fff;
-  color: #111;
-  line-height: 1.6;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 50px;
-}
-
-/* Header Styling */
-header {
-  width: 100%;
-  background: #000;
-  color: #fff;
-  padding: 30px 15px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.header-content h1 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.header-content p {
-  font-size: 1rem;
-  opacity: 0.85;
-}
-
-/* Search Section Styling */
-.search-section {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 30px 0;
-}
-
-.form-container {
-  background: #fff;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 500px;
-  border: 1px solid #000;
-}
-
-.search-section form {
-  display: flex;
-  flex-direction: column;
-}
-
-.search-section label {
-  font-weight: 500;
-  margin-bottom: 10px;
-  color: #111;
-}
-
-.search-section input {
-  padding: 14px 18px;
-  font-size: 1rem;
-  border: 1px solid #000;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  outline: none;
-  transition: border 0.3s ease;
-}
-
-.search-section input:focus {
-  border-color: #555;
-}
-
-.search-section button {
-  padding: 14px 18px;
-  background-color: #000;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.search-section button:hover {
-  background-color: #333;
-  transform: translateY(-2px);
-}
-
-/* Content Section Styling */
-#content {
-  width: 90%;
-  max-width: 700px;
-  margin-bottom: 50px;
-}
-
-#loading, #error {
-  text-align: center;
-  font-size: 1.1rem;
-  margin: 20px 0;
-}
-
-#error {
-  color: #d9534f;
-}
-
-.hidden {
-  display: none;
-}
-
-/* Fade-out animation for the loading message */
-.fade-out {
-  opacity: 0;
-  transition: opacity 1s ease-out;
-}
-
-/* Service Card Styling */
-.service {
-  background: #fff;
-  padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 20px;
-  border: 1px solid #000;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-}
-
-.service h2 {
-  margin-bottom: 5px;
-  font-size: 1.6rem;
-  border-bottom: 1px solid #000;
-  padding-bottom: 5px;
-  color: #000;
-  white-space: nowrap; /* Prevent wrapping */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.service-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-.service-table th, .service-table td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
-  color: #111;
-  white-space: nowrap; /* Ensure labels remain in one line */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.service-table th {
-  background: #fff;
-  font-weight: 500;
-  border: 1px solid #000;
-  font-size: 1rem;
-}
-
-/* Styling for success rows when Monitored is Yes */
-.success-row {
-  background-color: #d4edda!important;
-}
-
-/***** Mobile Responsive Adjustments *****/
-@media (max-width: 600px) {
-  header {
-    padding: 20px 10px;
-  }
-
-  .header-content h1 {
-    font-size: 1.8rem;
-  }
-
-  .form-container {
-    padding: 20px;
-  }
-
-  .search-section input, .search-section button {
-    font-size: 0.95rem;
-    padding: 12px 15px;
-  }
-
-  .service {
-    padding: clamp(10px, 1.5vw, 15px);
-  }
-
-  .service h2 {
-    font-size: 6vw;
-  }
-
-  .service-table th, .service-table td {
-    padding: clamp(2px, 1vw, 8px);
-    font-size: 3vw;
-  }
-}
-
+	/* Reset and Base Styles */
+	* {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+	
+	body {
+		font-family: 'Roboto', sans-serif;
+		background: #fff;
+		color: #111;
+		line-height: 1.6;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding-bottom: 50px;
+	}
+	
+	/* Header Styling */
+	header {
+		width: 100%;
+		background: #000;
+		color: #fff;
+		padding: 30px 15px;
+		text-align: center;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	}
+	
+	.header-content h1 {
+		font-size: 2rem;
+		margin-bottom: 10px;
+	}
+	
+	.header-content p {
+		font-size: 1rem;
+		opacity: 0.85;
+	}
+	
+	/* Search Section Styling */
+	.search-section {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		margin: 30px 0;
+	}
+	
+	.form-container {
+		background: #fff;
+		padding: 25px;
+		border-radius: 10px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		width: 90%;
+		max-width: 500px;
+		border: 1px solid #000;
+	}
+	
+	.search-section form {
+		display: flex;
+		flex-direction: column;
+	}
+	
+	.search-section label {
+		font-weight: 500;
+		margin-bottom: 10px;
+		color: #111;
+	}
+	
+	.search-section input {
+		padding: 14px 18px;
+		font-size: 1rem;
+		border: 1px solid #000;
+		border-radius: 6px;
+		margin-bottom: 20px;
+		outline: none;
+		transition: border 0.3s ease;
+	}
+	
+	.search-section input:focus {
+		border-color: #555;
+	}
+	
+	.search-section button {
+		padding: 14px 18px;
+		background-color: #000;
+		color: #fff;
+		font-size: 1rem;
+		font-weight: 500;
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: background 0.3s ease, transform 0.2s ease;
+	}
+	
+	.search-section button:hover {
+		background-color: #333;
+		transform: translateY(-2px);
+	}
+	
+	/* Content Section Styling */
+	#content {
+		width: 90%;
+		max-width: 700px;
+		margin-bottom: 50px;
+	}
+	
+	#loading, #error {
+		text-align: center;
+		font-size: 1.1rem;
+		margin: 20px 0;
+	}
+	
+	#error {
+		color: #d9534f;
+	}
+	
+	.hidden {
+		display: none;
+	}
+	
+	/* Fade-out animation for the loading message */
+	.fade-out {
+		opacity: 0;
+		transition: opacity 1s ease-out;
+	}
+	
+	/* Service Card Styling */
+	.service {
+		background: #fff;
+		padding: 20px;
+		margin-bottom: 20px;
+		border-radius: 20px;
+		border: 1px solid #000;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+	}
+	
+	.service h2 {
+		margin-bottom: 5px;
+		font-size: 1.6rem;
+		border-bottom: 1px solid #000;
+		padding-bottom: 5px;
+		color: #000;
+		white-space: nowrap; /* Prevent wrapping */
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.service-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 10px;
+	}
+	
+	.service-table th, .service-table td {
+		padding: 10px;
+		border-bottom: 1px solid #ddd;
+		text-align: left;
+		color: #111;
+		white-space: nowrap; /* Ensure labels remain in one line */
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.service-table th {
+		background: #fff;
+		font-weight: 500;
+		border: 1px solid #000;
+		font-size: 1rem;
+	}
+	
+	/* Styling for success rows when Monitored is Yes */
+	.success-row {
+		background-color: #d4edda!important;
+	}
+	
+	/***** Mobile Responsive Adjustments *****/
+	@media (max-width: 600px) {
+		header {
+			padding: 20px 10px;
+		}
+		
+		.header-content h1 {
+			font-size: 1.8rem;
+		}
+		
+		.form-container {
+			padding: 20px;
+		}
+		
+		.search-section input, .search-section button {
+			font-size: 0.95rem;
+			padding: 12px 15px;
+		}
+		
+		.service {
+			padding: clamp(10px, 1.5vw, 15px);
+		}
+		
+		.service h2 {
+			font-size: 6vw;
+		}
+		
+		.service-table th, .service-table td {
+			padding: clamp(2px, 1vw, 8px);
+			font-size: 3vw;
+		}
+	}
+	
 </style>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const DEFAULT_ID = '70049';
-  const POLLING_INTERVAL_MS = 15000; // 15 seconds
+	document.addEventListener('DOMContentLoaded', function() {
+		const DEFAULT_ID = '70049';
+		const POLLING_INTERVAL_MS = 15000; // 15 seconds
+		
+		// Get URL parameters
+		const urlParams = new URLSearchParams(window.location.search);
+		let id = urlParams.get('id');
+		let busNo = urlParams.get('bus_no');
+		
+		const busIdInput = document.getElementById('busId');
+		const busNoInput = document.getElementById('busNo');
+		const idForm = document.getElementById('idForm');
+		const servicesDiv = document.getElementById('services');
+		const loadingDiv = document.getElementById('loading');
+		const errorDiv = document.getElementById('error');
+		
+		// Set default id if not provided
+		if (!id) {
+			id = DEFAULT_ID;
+			busIdInput.value = DEFAULT_ID;
+			urlParams.set('id', DEFAULT_ID);
+			window.history.replaceState(null, '', `?${urlParams.toString()}`);
+		} else {
+			busIdInput.value = id;
+		}
+		
+		// Set busNo input if provided
+		if (busNo) {
+			busNoInput.value = busNo;
+		}
+		
+		// Polling: Fetch bus arrival data every 15 seconds without refreshing the page
+		let pollingInterval = setInterval(() => {
+			fetchAndDisplay(id, busNo, false);
+		}, POLLING_INTERVAL_MS);
+		
+		// On form submit, update id & busNo and restart polling
+		idForm.addEventListener('submit', function(event) {
+			event.preventDefault();
+			let newId = busIdInput.value.trim();
+			if (!newId) {
+				newId = DEFAULT_ID;
+			}
+			let newBusNo = busNoInput.value.trim();
+			
+			// Update URL without reloading
+			urlParams.set('id', newId);
+			if (newBusNo) {
+				urlParams.set('bus_no', newBusNo);
+			} else {
+				urlParams.delete('bus_no');
+			}
+			window.history.pushState(null, '', `?${urlParams.toString()}`);
+			
+			id = newId;
+			busNo = newBusNo;
+			
+			// Clear services and error messages
+			servicesDiv.innerHTML = '';
+			errorDiv.classList.add('hidden');
+			// Reset loading text
+			loadingDiv.textContent = 'Loading bus arrival data, please wait...';
+			loadingDiv.classList.remove('hidden');
+			
+			// Restart polling for the new id
+			clearInterval(pollingInterval);
+			pollingInterval = setInterval(() => {
+				fetchAndDisplay(id, busNo, false);
+			}, POLLING_INTERVAL_MS);
+			// Immediately fetch data
+			fetchAndDisplay(id, busNo, true);
+		});
+		
+		// Initial data fetch
+		fetchAndDisplay(id, busNo, true);
+		
+		function fetchAndDisplay(id, busNoFilter, showLoading) {
+			if (showLoading) {
+				loadingDiv.classList.remove('hidden');
+				loadingDiv.textContent = 'Loading bus arrival data, please wait...';
+			}
+			errorDiv.classList.add('hidden');
+			
+			const apiUrl = `https://arrivelah2.busrouter.sg/?id=${encodeURIComponent(id)}`;
+			fetch(apiUrl)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				if (showLoading) {
+					loadingDiv.classList.add('hidden');
+				}
+				displayServices(data, busNoFilter);
+			})
+			.catch(error => {
+				loadingDiv.classList.add('hidden');
+				errorDiv.textContent = 'Error: ' + error.message;
+				errorDiv.classList.remove('hidden');
+			});
+		}
+		
+		
+		// Display bus arrival services and trips in a table format.
+		// If a busNoFilter is provided, only show services matching that bus number.
+		function displayServices(data, busNoFilter) {
+			servicesDiv.innerHTML = '';
+			if (!data.services || data.services.length === 0) {
+				servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found at this stop.</p>';
+				return;
+			}
+			
+			data.services.forEach(service => {
+				// If busNoFilter is set, filter out non matching services
+				if (busNoFilter && service.no !== busNoFilter) {
+					return;
+				}
+				
+				const serviceContainer = document.createElement('div');
+				serviceContainer.className = 'service';
+				
+				// Header for the service without the extra small text
+				const header = document.createElement('h2');
+				header.textContent = `Service ${service.no} from ${service.operator}`;
+				serviceContainer.appendChild(header);
+				
+				// Create table for trip information
+				const table = document.createElement('table');
+				table.className = 'service-table';
+				
+				// Create header row for the table with: Time, Duration (min), Load & Info, Monitored
+				const headerRow = document.createElement('tr');
+				const headers = ['Time', 'Duration (min)', 'Load & Info', 'Monitored'];
+				headers.forEach(text => {
+					const th = document.createElement('th');
+					th.textContent = text;
+					headerRow.appendChild(th);
+				});
+				table.appendChild(headerRow);
+				
+				// Define friendly names for arrival orders
+				const tripLabels = {
+					next: 'First Bus Arrival',
+					subsequent: 'Second Bus Arrival',
+					next2: 'Third Bus Arrival',
+					next3: 'Fourth Bus Arrival'
+				};
+				
+				// Iterate through each trip information
+				Object.keys(tripLabels).forEach(key => {
+					const tripData = service[key];
+					if (tripData) {
+						const row = document.createElement('tr');
+						
+						// Time formatted
+						const timeTd = document.createElement('td');
+						const time = new Date(tripData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+						timeTd.textContent = time;
+						row.appendChild(timeTd);
+						
+						// Duration in minutes
+						const durationTd = document.createElement('td');
+						const duration = Math.ceil(tripData.duration_ms / 60000);
+						durationTd.textContent = duration;
+						row.appendChild(durationTd);
+						
+						// Load & Info column with load info on top and a smaller trip label below
+						const loadTd = document.createElement('td');
+						loadTd.innerHTML = tripData.load + '<br><span style="font-size: clamp(3px, 2vw, 12px); white-space:nowrap;">' + tripLabels[key] + '</span>';
+						row.appendChild(loadTd);
+						
+						// Monitored column
+						const monitoredTd = document.createElement('td');
+						const monitoredText = tripData.monitored ? 'Yes' : 'No';
+						monitoredTd.textContent = monitoredText;
+						row.appendChild(monitoredTd);
+						
+						// If monitored is Yes, add success styling to the row
+						if(tripData.monitored){
+							row.classList.add('success-row');
+						}
+						
+						table.appendChild(row);
+					}
+				});
+				
+				serviceContainer.appendChild(table);
+				servicesDiv.appendChild(serviceContainer);
+			});
+			
+			// Attach click event to all service elements
+			document.querySelectorAll('.service').forEach(service => {
+				service.addEventListener('click', function() {
+					const busNo = this.getAttribute('data-id');
+					console.log(`Fetching data for Service ${busNo}`);
 
-  // Get URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  let id = urlParams.get('id');
-  let busNo = urlParams.get('bus_no');
+					// Apply transition to the service div and all child elements
+					this.style.transition = 'background-color 0.5s ease-in-out';
+					this.style.backgroundColor = 'black';
 
-  const busIdInput = document.getElementById('busId');
-  const busNoInput = document.getElementById('busNo');
-  const idForm = document.getElementById('idForm');
-  const servicesDiv = document.getElementById('services');
-  const loadingDiv = document.getElementById('loading');
-  const errorDiv = document.getElementById('error');
+					// Apply transition to all child elements
+					this.querySelectorAll('*').forEach(child => {
+						child.style.transition = 'background-color 0.3s ease-in-out';
+						child.style.backgroundColor = 'black';
+					});
 
-  // Set default id if not provided
-  if (!id) {
-    id = DEFAULT_ID;
-    busIdInput.value = DEFAULT_ID;
-    urlParams.set('id', DEFAULT_ID);
-    window.history.replaceState(null, '', `?${urlParams.toString()}`);
-  } else {
-    busIdInput.value = id;
-  }
-
-  // Set busNo input if provided
-  if (busNo) {
-    busNoInput.value = busNo;
-  }
-
-  // Polling: Fetch bus arrival data every 15 seconds without refreshing the page
-  let pollingInterval = setInterval(() => {
-    fetchAndDisplay(id, busNo, false);
-  }, POLLING_INTERVAL_MS);
-
-  // On form submit, update id & busNo and restart polling
-  idForm.addEventListener('submit', function(event) {
-    event.preventDefault();
-    let newId = busIdInput.value.trim();
-    if (!newId) {
-      newId = DEFAULT_ID;
-    }
-    let newBusNo = busNoInput.value.trim();
-
-    // Update URL without reloading
-    urlParams.set('id', newId);
-    if (newBusNo) {
-      urlParams.set('bus_no', newBusNo);
-    } else {
-      urlParams.delete('bus_no');
-    }
-    window.history.pushState(null, '', `?${urlParams.toString()}`);
-
-    id = newId;
-    busNo = newBusNo;
-    
-    // Clear services and error messages
-    servicesDiv.innerHTML = '';
-    errorDiv.classList.add('hidden');
-    // Reset loading text
-    loadingDiv.textContent = 'Loading bus arrival data, please wait...';
-    loadingDiv.classList.remove('hidden');
-
-    // Restart polling for the new id
-    clearInterval(pollingInterval);
-    pollingInterval = setInterval(() => {
-      fetchAndDisplay(id, busNo, false);
-    }, POLLING_INTERVAL_MS);
-    // Immediately fetch data
-    fetchAndDisplay(id, busNo, true);
-  });
-
-  // Initial data fetch
-  fetchAndDisplay(id, busNo, true);
-
-  function fetchAndDisplay(id, busNoFilter, showLoading) {
-    if (showLoading) {
-      loadingDiv.classList.remove('hidden');
-      loadingDiv.textContent = 'Loading bus arrival data, please wait...';
-    }
-    errorDiv.classList.add('hidden');
-
-    const apiUrl = `https://arrivelah2.busrouter.sg/?id=${encodeURIComponent(id)}`;
-    fetch(apiUrl)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (showLoading) {
-          loadingDiv.classList.add('hidden');
-        }
-        displayServices(data, busNoFilter);
-      })
-      .catch(error => {
-        loadingDiv.classList.add('hidden');
-        errorDiv.textContent = 'Error: ' + error.message;
-        errorDiv.classList.remove('hidden');
-      });
-  }
-
-  // Display bus arrival services and trips in a table format.
-  // If a busNoFilter is provided, only show services matching that bus number.
-  function displayServices(data, busNoFilter) {
-    servicesDiv.innerHTML = '';
-    if (!data.services || data.services.length === 0) {
-      servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found at this stop.</p>';
-      return;
-    }
-
-    data.services.forEach(service => {
-      // If busNoFilter is set, filter out non matching services
-      if (busNoFilter && service.no !== busNoFilter) {
-        return;
-      }
-
-      const serviceContainer = document.createElement('div');
-      serviceContainer.className = 'service';
-
-      // Header for the service without the extra small text
-      const header = document.createElement('h2');
-      header.textContent = `Service ${service.no} from ${service.operator}`;
-      serviceContainer.appendChild(header);
-
-      // Create table for trip information
-      const table = document.createElement('table');
-      table.className = 'service-table';
-
-      // Create header row for the table with: Time, Duration (min), Load & Info, Monitored
-      const headerRow = document.createElement('tr');
-      const headers = ['Time', 'Duration (min)', 'Load & Info', 'Monitored'];
-      headers.forEach(text => {
-        const th = document.createElement('th');
-        th.textContent = text;
-        headerRow.appendChild(th);
-      });
-      table.appendChild(headerRow);
-
-      // Define friendly names for arrival orders
-      const tripLabels = {
-        next: 'First Bus Arrival',
-        subsequent: 'Second Bus Arrival',
-        next2: 'Third Bus Arrival',
-        next3: 'Fourth Bus Arrival'
-      };
-
-      // Iterate through each trip information
-      Object.keys(tripLabels).forEach(key => {
-        const tripData = service[key];
-        if (tripData) {
-          const row = document.createElement('tr');
-          
-          // Time formatted
-          const timeTd = document.createElement('td');
-          const time = new Date(tripData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          timeTd.textContent = time;
-          row.appendChild(timeTd);
-
-          // Duration in minutes
-          const durationTd = document.createElement('td');
-          const duration = Math.ceil(tripData.duration_ms / 60000);
-          durationTd.textContent = duration;
-          row.appendChild(durationTd);
-
-          // Load & Info column with load info on top and a smaller trip label below
-          const loadTd = document.createElement('td');
-          loadTd.innerHTML = tripData.load + '<br><span style="font-size: clamp(3px, 2vw, 12px); white-space:nowrap;">' + tripLabels[key] + '</span>';
-          row.appendChild(loadTd);
-
-          // Monitored column
-          const monitoredTd = document.createElement('td');
-          const monitoredText = tripData.monitored ? 'Yes' : 'No';
-          monitoredTd.textContent = monitoredText;
-          row.appendChild(monitoredTd);
-
-          // If monitored is Yes, add success styling to the row
-          if(tripData.monitored){
-            row.classList.add('success-row');
-          }
-
-          table.appendChild(row);
-        }
-      });
-
-      serviceContainer.appendChild(table);
-      servicesDiv.appendChild(serviceContainer);
-    });
-
-    // If no service was added and a filter is applied then show a not found message
-    if (servicesDiv.innerHTML.trim() === '') {
-      servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found for service ' + busNoFilter + ' at this stop.</p>';
-    }
-  }
-
-  // Clean up polling if the user navigates away
-  window.addEventListener('beforeunload', () => {
-    clearInterval(pollingInterval);
-  });
-});
-
+					// Change everything back to white after 0.5s
+					setTimeout(() => {
+						fetchAndDisplay(id, busNo, true);
+					}, 600);
+				});
+			});
+			
+			
+			// If no service was added and a filter is applied then show a not found message
+			if (servicesDiv.innerHTML.trim() === '') {
+				servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found for service ' + busNoFilter + ' at this stop.</p>';
+			}
+		}
+		
+		// Clean up polling if the user navigates away
+		window.addEventListener('beforeunload', () => {
+			clearInterval(pollingInterval);
+		});
+		
+	});
+	
 </script>
