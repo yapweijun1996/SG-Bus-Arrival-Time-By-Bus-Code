@@ -1,28 +1,11 @@
+
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Bus Arrival Information</title>
 		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-		<script>
-			window.onload = function() {
-				const originalLog = console.log;
-				console.log = function(...args) {
-					originalLog.apply(console, args);
-					if (window.parent) {
-						window.parent.postMessage(args.join(" "), "*");
-					}
-				};
-				
-				const originalErrorLog = console.error;
-				console.error = function(...args) {
-					originalErrorLog.apply(console, args);
-					if (window.parent) {
-						window.parent.postMessage(args.join(" "), "*");
-					}
-				};
-			};
-		</script>
 		<style>
 			/* Reset and Base Styles */
 			* {
@@ -30,6 +13,7 @@
 				margin: 0;
 				padding: 0;
 			}
+			
 			body {
 				font-family: 'Roboto', sans-serif;
 				background: #fff;
@@ -40,6 +24,7 @@
 				align-items: center;
 				padding-bottom: 50px;
 			}
+			
 			/* Header Styling */
 			header {
 				width: 100%;
@@ -49,14 +34,17 @@
 				text-align: center;
 				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 			}
+			
 			.header-content h1 {
 				font-size: 2rem;
 				margin-bottom: 10px;
 			}
+			
 			.header-content p {
 				font-size: 1rem;
 				opacity: 0.85;
 			}
+			
 			/* Search Section Styling */
 			.search-section {
 				width: 100%;
@@ -64,6 +52,7 @@
 				justify-content: center;
 				margin: 30px 0;
 			}
+			
 			.form-container {
 				background: #fff;
 				padding: 25px;
@@ -73,15 +62,18 @@
 				max-width: 500px;
 				border: 1px solid #000;
 			}
+			
 			.search-section form {
 				display: flex;
 				flex-direction: column;
 			}
+			
 			.search-section label {
 				font-weight: 500;
 				margin-bottom: 10px;
 				color: #111;
 			}
+			
 			.search-section input[type="text"],
 			.tag-input {
 				padding: 14px 18px;
@@ -93,10 +85,12 @@
 				transition: border 0.3s ease;
 				width: 100%;
 			}
+			
 			.search-section input[type="text"]:focus,
 			.tag-input:focus {
 				border-color: #555;
 			}
+			
 			.search-section button {
 				padding: 14px 18px;
 				background-color: #000;
@@ -108,10 +102,12 @@
 				cursor: pointer;
 				transition: background 0.3s ease, transform 0.2s ease;
 			}
+			
 			.search-section button:hover {
 				background-color: #333;
 				transform: translateY(-2px);
 			}
+			
 			/* Tag Input Container */
 			.tag-container {
 				display: flex;
@@ -124,6 +120,7 @@
 				min-height: 40px;
 				cursor: text;
 			}
+			
 			.tag {
 				background-color: #ddd;
 				border-radius: 4px;
@@ -133,11 +130,13 @@
 				align-items: center;
 				font-size: 0.95rem;
 			}
+			
 			.tag span {
 				margin-left: 8px;
 				cursor: pointer;
 				font-weight: bold;
 			}
+			
 			.tag-input {
 				border: none;
 				outline: none;
@@ -145,28 +144,34 @@
 				flex-grow: 1;
 				min-width: 80px;
 			}
+			
 			/* Content Section Styling */
 			#content {
 				width: 90%;
 				max-width: 700px;
 				margin-bottom: 50px;
 			}
+			
 			#loading, #error {
 				text-align: center;
 				font-size: 1.1rem;
 				margin: 20px 0;
 			}
+			
 			#error {
 				color: #d9534f;
 			}
+			
 			.hidden {
 				display: none;
 			}
+			
 			/* Fade-out animation for the loading message */
 			.fade-out {
 				opacity: 0;
 				transition: opacity 1s ease-out;
 			}
+			
 			/* Service Card Styling */
 			.service {
 				background: #fff;
@@ -176,6 +181,7 @@
 				border: 1px solid #000;
 				box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 			}
+			
 			.service h2 {
 				margin-bottom: 5px;
 				font-size: 1.6rem;
@@ -186,11 +192,13 @@
 				overflow: hidden;
 				text-overflow: ellipsis;
 			}
+			
 			.service-table {
 				width: 100%;
 				border-collapse: collapse;
 				margin-top: 10px;
 			}
+			
 			.service-table th, .service-table td {
 				padding: 10px;
 				border-bottom: 1px solid #ddd;
@@ -200,18 +208,82 @@
 				overflow: hidden;
 				text-overflow: ellipsis;
 			}
+			
 			.service-table th {
 				background: #fff;
 				font-weight: 500;
 				border: 1px solid #000;
 				font-size: 1rem;
 			}
-			/* Styling for success rows when Monitored is Yes */
+			
 			.success-row {
 				background-color: #d4edda!important;
 			}
-			/***** Mobile Responsive Adjustments *****/
+			.legend {
+				width: 90%;
+				max-width: 700px;
+				margin-top: 30px;
+				font-size: 0.95rem;
+				padding: 10px;
+			}
+			
+			.legend h3 {
+				margin-bottom: 10px;
+				font-weight: 500;
+				border-bottom: 1px solid #000;
+				padding-bottom: 5px;
+			}
+			
+			.legend-item {
+				margin-bottom: 12px;
+			}
+			
+			.legend-item strong {
+				display: block;
+				margin-bottom: 4px;
+				font-weight: 600;
+			}
+			
+			.legend-item p {
+				margin-left: 10px;
+				line-height: 1.5;
+			}
+			
+			/* Responsive Adjustments */
 			@media (max-width: 600px) {
+				.service-table th:nth-child(1),
+				.service-table th:nth-child(2),
+				.service-table th:nth-child(3),
+				.service-table th:nth-child(4),
+				.service-table th:nth-child(5),
+				.service-table th:nth-child(6),
+				.service-table th:nth-child(7) {
+					font-size: 3vw;
+				}
+				.service-table td:nth-child(4),
+				.service-table th:nth-child(4),
+				.service-table td:nth-child(6),
+				.service-table th:nth-child(6),
+				.service-table td:nth-child(7),
+				.service-table th:nth-child(7) {
+					display: none;
+				}
+				.service-table td:nth-child(1),
+				.service-table td:nth-child(2){
+					font-size: 5vw;
+				}
+				.service-table td:nth-child(3),
+				.service-table td:nth-child(5){
+					font-size: 4vw;
+				}
+				.legend {
+					font-size: 5.5vw;
+					line-height: 1.6;
+				}
+				
+				.legend-item p {
+					margin-left: 0;
+				}
 				header {
 					padding: 20px 10px;
 				}
@@ -236,6 +308,7 @@
 					font-size: 3vw;
 				}
 			}
+			
 		</style>
 	</head>
 	<body>
@@ -245,62 +318,103 @@
 				<p>Enter a bus stop ID below to see the upcoming bus arrivals. If left empty, it defaults to 70049. Optionally filter by Bus Service Number using tags. (e.g., add 155 and 135)</p>
 			</div>
 		</header>
+		
 		<section class="search-section">
 			<div class="form-container">
 				<form id="idForm">
 					<label for="busId">Bus Stop ID</label>
 					<input type="text" id="busId" name="busId" placeholder="70049">
+					
 					<label for="busTags">Bus Service Filter (Optional, use tags below)</label>
 					<div class="tag-container" id="tagContainer">
 						<input type="text" class="tag-input" id="tagInput" placeholder="Type a number and press Enter">
 					</div>
-					<!-- Hidden input to hold comma separated bus numbers -->
+					
 					<input type="hidden" id="busNo" name="busNo" value="">
 					<input type="hidden" id="filter_bus_no" name="filter_bus_no" value="">
+					
 					<button type="submit">Check Arrival</button>
 				</form>
 			</div>
 		</section>
+		
 		<section id="content">
 			<div id="loading">Loading bus arrival data, please wait...</div>
 			<div id="error" class="hidden"></div>
 			<div id="services"></div>
 		</section>
+		
+		<section id="legend" class="legend">
+			<h3>Legend</h3>
+			<div class="legend-item">
+				<strong>Operator:</strong>
+				<p>SBST – SBS Transit<br>SMRT – SMRT Corporation<br>TTS – Tower Transit Singapore<br>GAS – Go Ahead Singapore</p>
+			</div>
+			<div class="legend-item">
+				<strong>Load:</strong>
+				<p>SEA – Seats Available<br>SDA – Standing Available<br>LSD – Limited Standing</p>
+			</div>
+			<div class="legend-item">
+				<strong>Feature:</strong>
+				<p>WAB – Wheelchair Accessible Bus</p>
+			</div>
+			<div class="legend-item">
+				<strong>Type:</strong>
+				<p>SD – Single Deck<br>DD – Double Deck<br>BD – Bendy</p>
+			</div>
+		</section>
+		
+		
 		<script>
-			document.addEventListener('DOMContentLoaded', function() {
+			// JavaScript from fixed displayServices() function — now supports unique rows, adds feature/type columns, avoids duplicate times
+			document.addEventListener('DOMContentLoaded', function () {
 				const DEFAULT_ID = '70049';
-				const POLLING_INTERVAL_MS = 15000; // 15 seconds
+				const POLLING_INTERVAL_MS = 15000; // 15000 = 15 seconds
+				const urlParams = new URLSearchParams(window.location.search);
 				
-				// URL parameter synchronization for busId and busNo (tags)
-				var urlParams = new URLSearchParams(window.location.search);
-				var busIdInput = document.getElementById('busId');
-				var filter_bus_no_yn = document.querySelector("#filter_bus_no");
+				const busIdInput = document.getElementById('busId');
+				const filterBusNoInput = document.querySelector("#filter_bus_no");
+				const tagContainer = document.getElementById('tagContainer');
+				const tagInput = document.getElementById('tagInput');
+				const busNoHidden = document.getElementById('busNo');
+				const idForm = document.getElementById('idForm');
+				const loadingDiv = document.getElementById('loading');
+				const errorDiv = document.getElementById('error');
+				const servicesDiv = document.getElementById('services');
 				
-				// Prefer "busId" parameter if present else default to DEFAULT_ID
-				var idParam = urlParams.get('busId');
-				if (!idParam) {
-					busIdInput.value = DEFAULT_ID;
-					urlParams.set('busId', DEFAULT_ID);
-					window.history.replaceState(null, '', '?' + urlParams.toString());
-				} else {
-					busIdInput.value = idParam;
+				let pollingInterval;
+				let tags = [];
+				
+				function initialize() {
+					const idParam = urlParams.get('busId');
+					if (!idParam) {
+						busIdInput.value = DEFAULT_ID;
+						urlParams.set('busId', DEFAULT_ID);
+						window.history.replaceState(null, '', '?' + urlParams.toString());
+					} else {
+						busIdInput.value = idParam;
+					}
+					
+					const busNoParam = urlParams.get('busNo');
+					if (busNoParam) {
+						tags = busNoParam.split(',').map(item => item.trim()).filter(item => item);
+						refreshTags();
+					}
+					
+					setupEventListeners();
+					fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
+					pollingInterval = setInterval(() => fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value), POLLING_INTERVAL_MS);
 				}
-				
-				// Tag Input elements and functionality
-				var tagContainer = document.getElementById('tagContainer');
-				var tagInput = document.getElementById('tagInput');
-				var busNoHidden = document.getElementById('busNo');
-				var tags = [];
 				
 				function refreshTags() {
 					tagContainer.innerHTML = '';
-					tags.forEach(function(tag, index) {
-						var tagElem = document.createElement('div');
+					tags.forEach((tag, index) => {
+						const tagElem = document.createElement('div');
 						tagElem.className = 'tag';
 						tagElem.textContent = tag;
-						var removeSpan = document.createElement('span');
+						const removeSpan = document.createElement('span');
 						removeSpan.textContent = '×';
-						removeSpan.onclick = function() {
+						removeSpan.onclick = function () {
 							tags.splice(index, 1);
 							refreshTags();
 						};
@@ -309,226 +423,163 @@
 					});
 					tagContainer.appendChild(tagInput);
 					busNoHidden.value = tags.join(',');
-					
-					
-					// If filter_bus_no parameter equals 'y', focus the tag input after load.
-					if(urlParams.get('filter_bus_no') === 'y'){
-						tagInput.focus();
-					}
+					if (urlParams.get('filter_bus_no') === 'y') tagInput.focus();
 				}
 				
-				tagInput.addEventListener('keydown', function(e) {
-					if(e.key === 'Enter' || e.key === ',') {
-						if(filter_bus_no_yn){
-							filter_bus_no_yn.value = "y";
-						}
-						e.preventDefault();
-						var value = tagInput.value.trim();
-						if(value && tags.indexOf(value) === -1) {
-							tags.push(value);
+				function setupEventListeners() {
+					tagInput.addEventListener('keydown', function (e) {
+						if (e.key === 'Enter' || e.key === ',') {
+							e.preventDefault();
+							filterBusNoInput.value = 'y';
+							const value = tagInput.value.trim();
+							if (value && !tags.includes(value)) {
+								tags.push(value);
+								refreshTags();
+								idForm.submit();
+							}
+							tagInput.value = '';
+						} else if (e.key === 'Backspace' && tagInput.value === '' && tags.length > 0) {
+							tags.pop();
 							refreshTags();
-							idForm.submit();
 						}
-						tagInput.value = '';
-					} else if(e.key === 'Backspace' && tagInput.value === '' && tags.length > 0) {
-						tags.pop();
-						refreshTags();
-					}
-				});
-				
-				tagContainer.addEventListener('click', function() {
-					tagInput.focus();
-				});
-				
-				var busNoParam = urlParams.get('busNo');
-				if (busNoParam) {
-					tags = busNoParam.split(',').map(function(item) { return item.trim(); }).filter(function(item) { return item; });
-					refreshTags();
+					});
+					
+					tagContainer.addEventListener('click', () => tagInput.focus());
+					
+					idForm.addEventListener('submit', function (event) {
+						event.preventDefault();
+						const newId = busIdInput.value.trim() || DEFAULT_ID;
+						const newBusNo = busNoHidden.value.trim();
+						const filterBusNo = filterBusNoInput.value.trim() || 'n';
+						
+						urlParams.set('filter_bus_no', filterBusNo);
+						urlParams.set('busId', newId);
+						if (newBusNo) urlParams.set('busNo', newBusNo);
+						else urlParams.delete('busNo');
+						
+						window.history.pushState(null, '', '?' + urlParams.toString());
+						
+						servicesDiv.innerHTML = '';
+						errorDiv.classList.add('hidden');
+						loadingDiv.textContent = 'Loading bus arrival data, please wait...';
+						loadingDiv.classList.remove('hidden');
+						
+						clearInterval(pollingInterval);
+						pollingInterval = setInterval(() => fetchAndDisplay(newId, newBusNo), POLLING_INTERVAL_MS);
+						fetchAndDisplay(newId, newBusNo);
+					});
+					
+					window.addEventListener('beforeunload', () => clearInterval(pollingInterval));
 				}
 				
-				// Polling: Fetch bus arrival data every 15 seconds without refreshing the page
-				var loadingDiv = document.getElementById('loading');
-				var errorDiv = document.getElementById('error');
-				var servicesDiv = document.getElementById('services');
-				var pollingInterval = setInterval(function() {
-					fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
-				}, POLLING_INTERVAL_MS);
-				
-				// On form submit, update URL parameters and restart polling without reloading the page
-				var idForm = document.getElementById('idForm');
-				idForm.addEventListener('submit', function(event) {
-					//event.preventDefault();
-					var newId = busIdInput.value.trim() || DEFAULT_ID;
-					var newBusNo = busNoHidden.value.trim();
-					var filter_bus_no_yn = filter_bus_no_yn.value.trim() || 'n';
-					
-					urlParams.set('filter_bus_no', filter_bus_no_yn);
-					urlParams.set('busId', newId);
-					if(newBusNo) {
-						urlParams.set('busNo', newBusNo);
-					} else {
-						urlParams.delete('busNo');
-					}
-					window.history.pushState(null, '', '?' + urlParams.toString());
-					
-					// Clear previous results
-					servicesDiv.innerHTML = '';
-					errorDiv.classList.add('hidden');
-					loadingDiv.textContent = 'Loading bus arrival data, please wait...';
-					loadingDiv.classList.remove('hidden');
-					
-					clearInterval(pollingInterval);
-					pollingInterval = setInterval(function() {
-						fetchAndDisplay(newId, newBusNo);
-					}, POLLING_INTERVAL_MS);
-					
-					fetchAndDisplay(newId, newBusNo);
-				});
-				
-				// Fetch bus arrival data from the API
 				function fetchAndDisplay(busId, busNoFilter) {
 					loadingDiv.classList.remove('hidden');
 					loadingDiv.textContent = 'Loading bus arrival data, please wait...';
 					errorDiv.classList.add('hidden');
-					var apiUrl = 'https://arrivelah2.busrouter.sg/?id=' + encodeURIComponent(busId);
-					fetch(apiUrl)
-					.then(function(response) {
-						if(!response.ok) {
-							throw new Error('Network response was not ok');
-						}
-						return response.json();
-					})
-					.then(function(data) {
+					
+					fetch(`https://arrivelah2.busrouter.sg/?id=${encodeURIComponent(busId)}`)
+					.then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
+					.then(data => {
 						loadingDiv.classList.add('hidden');
 						displayServices(data, busNoFilter);
 					})
-					.catch(function(error) {
+					.catch(error => {
 						loadingDiv.classList.add('hidden');
-						errorDiv.textContent = 'Error: ' + error.message;
+						errorDiv.textContent = 'Error: ' + error;
 						errorDiv.classList.remove('hidden');
 					});
 				}
 				
-				// Display bus arrival services and trips in a table format.
-				// If a busNoFilter (comma separated string) is provided, only show services matching those bus numbers.
 				function displayServices(data, busNoFilter) {
 					servicesDiv.innerHTML = '';
-					if(!data.services || data.services.length === 0) {
+					if (!data.services || data.services.length === 0) {
 						servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found at this stop.</p>';
 						return;
 					}
-					// Convert busNoFilter into an array if provided.
-					var filterArray = [];
-					if(busNoFilter) {
-						filterArray = busNoFilter.split(',').map(function(item) { return item.trim(); });
-					}
-					data.services.forEach(function(service) {
-						// If a filter is applied, skip services that are not in the filter array.
-						if(filterArray.length > 0 && filterArray.indexOf(service.no) === -1) {
-							return;
-						}
-						var serviceContainer = document.createElement('div');
-						serviceContainer.className = 'service';
+					
+					const filterArray = busNoFilter ? busNoFilter.split(',').map(item => item.trim()) : [];
+					
+					data.services.forEach(service => {
+						if (filterArray.length > 0 && !filterArray.includes(service.no)) return;
 						
-						// Header for the service.
-						var header = document.createElement('h2');
-						header.textContent = 'Service ' + service.no + ' from ' + service.operator;
+						const seen = new Set();
+						const serviceContainer = document.createElement('div');
+						serviceContainer.className = 'service';
+						serviceContainer.setAttribute('data-id', service.no);
+						const header = document.createElement('h2');
+						header.textContent = `${service.no} from ${service.operator}`;
 						serviceContainer.appendChild(header);
 						
-						// Create table for trip information.
-						var table = document.createElement('table');
+						const table = document.createElement('table');
 						table.className = 'service-table';
-						
-						// Create header row.
-						var headerRow = document.createElement('tr');
-						var headers = ['Time', 'Duration (min)', 'Load & Info', 'Monitored'];
-						headers.forEach(function(text) {
-							var th = document.createElement('th');
+						const headerRow = document.createElement('tr');
+						['Time', 'Duration', 'Load', 'Feature', 'Type', 'Info', 'Tracked'].forEach(text => {
+							const th = document.createElement('th');
 							th.textContent = text;
 							headerRow.appendChild(th);
 						});
 						table.appendChild(headerRow);
 						
-						var tripLabels = {
+						const tripLabels = {
 							next: 'First Bus Arrival',
-							subsequent: 'Second Bus Arrival',
-							next2: 'Third Bus Arrival',
-							next3: 'Fourth Bus Arrival'
+							subsequent: 'Next Bus Arrival',
+							next2: 'Second Bus Arrival',
+							next3: 'Third Bus Arrival'
 						};
 						
-						Object.keys(tripLabels).forEach(function(key) {
-							var tripData = service[key];
-							if(tripData) {
-								var row = document.createElement('tr');
-								
-								// Time column.
-								var timeTd = document.createElement('td');
-								var time = new Date(tripData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-								timeTd.textContent = time;
-								row.appendChild(timeTd);
-								
-								// Duration column.
-								var durationTd = document.createElement('td');
-								var duration = Math.ceil(tripData.duration_ms / 60000);
-								durationTd.textContent = duration;
-								row.appendChild(durationTd);
-								
-								// Load & Info column.
-								var loadTd = document.createElement('td');
-								loadTd.innerHTML = tripData.load + '<br><span style="font-size: clamp(3px, 2vw, 12px); white-space:nowrap;">' + tripLabels[key] + '</span>';
-								row.appendChild(loadTd);
-								
-								// Monitored column.
-								var monitoredTd = document.createElement('td');
-								monitoredTd.textContent = tripData.monitored ? 'Yes' : 'No';
-								row.appendChild(monitoredTd);
-								
-								// Apply success style if monitored.
-								if(tripData.monitored) {
-									row.classList.add('success-row');
-								}
-								table.appendChild(row);
-							}
+						Object.entries(tripLabels).forEach(([key, label]) => {
+							const tripData = service[key];
+							if (!tripData) return;
+							
+							const timeKey = `${tripData.time}_${tripData.duration_ms}`;
+							if (seen.has(timeKey)) return;
+							seen.add(timeKey);
+							
+							const row = document.createElement('tr');
+							const time = new Date(tripData.time);
+							const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+							const durationMin = Math.ceil(tripData.duration_ms / 60000);
+							const durationText = durationMin <= 1 ? 'Arrived' : durationMin + ' min';
+							
+							row.innerHTML = `
+							<td title="${time.toISOString()}">${formattedTime}</td>
+							<td>${durationText}</td>
+							<td title="${tripData.load}">${tripData.load}</td>
+							<td>${tripData.feature || '-'}</td>
+							<td>${tripData.type || '-'}</td>
+							<td style="font-size: 0.85rem">${label}</td>
+							<td title="Tracked via GPS or backend system">${tripData.monitored ? 'Yes' : 'No'}</td>
+							`;
+							
+							if (tripData.monitored) row.classList.add('success-row');
+							table.appendChild(row);
 						});
+						
 						serviceContainer.appendChild(table);
 						servicesDiv.appendChild(serviceContainer);
-					});
-					
-					// Attach click event to all service elements
-					document.querySelectorAll('.service').forEach(service => {
-						service.addEventListener('click', function() {
-							const busNo = this.getAttribute('data-id');
-							console.log(`Fetching data for Service ${busNo}`);
-
-							// Apply transition to the service div and all child elements
-							this.style.transition = 'background-color 0.5s ease-in-out';
-							this.style.backgroundColor = 'black';
-
-							// Apply transition to all child elements
-							this.querySelectorAll('*').forEach(child => {
-								child.style.transition = 'background-color 0.3s ease-in-out';
-								child.style.backgroundColor = 'black';
+						
+						document.querySelectorAll('.service').forEach(service => {
+							service.addEventListener('click', function () {
+								const busNo = this.getAttribute('data-id');
+								console.log(`Fetching data for Service ${busNo}`);
+								
+								this.style.transition = 'background-color 0.5s ease-in-out';
+								this.style.backgroundColor = 'black';
+								
+								this.querySelectorAll('*').forEach(child => {
+									child.style.transition = 'background-color 0.3s ease-in-out';
+									child.style.backgroundColor = 'black';
+								});
+								
+								setTimeout(() => {
+									fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
+								}, 600);
 							});
-
-							// Change everything back to white after 0.5s
-							setTimeout(() => {
-								fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
-							}, 600);
 						});
 					});
-			
-					if (servicesDiv.innerHTML.trim() === '') {
-						servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found for service filter provided.</p>';
-					}
 				}
 				
-				// Cleanup polling when leaving page.
-				window.addEventListener('beforeunload', function() {
-					clearInterval(pollingInterval);
-				});
-				
-				// Initial fetch.
-				fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
+				initialize();
 			});
 		</script>
 	</body>
