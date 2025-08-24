@@ -488,6 +488,15 @@
 					
 					idForm.addEventListener('submit', function (event) {
 						event.preventDefault();
+						
+						// Auto-add tag input text as filter if present
+						const tagInputValue = tagInput.value.trim();
+						if (tagInputValue && !tags.includes(tagInputValue)) {
+							tags.push(tagInputValue);
+							refreshTags();
+							tagInput.value = '';
+						}
+						
 						const newId = busIdInput.value.trim() || DEFAULT_ID;
 						const newBusNo = busNoHidden.value.trim();
 						const filterBusNo = filterBusNoInput.value.trim() || 'n';
