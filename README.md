@@ -67,6 +67,8 @@ The application uses the following abbreviations:
 This application uses the ArrivaLah API:
 `https://arrivelah2.busrouter.sg/?id={bus_stop_id}`
 
+For more information, see the original ArrivaLah repository: [https://github.com/cheeaun/arrivelah](https://github.com/cheeaun/arrivelah)
+
 Replace `{bus_stop_id}` with the desired bus stop ID.
 
 ## License
