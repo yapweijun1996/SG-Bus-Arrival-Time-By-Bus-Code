@@ -6,6 +6,11 @@ This is a simple, self-contained web application that displays upcoming bus arri
 
 A live demo is available here: [https://yapweijun1996.github.io/SG-Bus-Arrival-Time-By-Bus-Code/](https://yapweijun1996.github.io/SG-Bus-Arrival-Time-By-Bus-Code/)
 
+## Preview
+
+<img width="1439" height="768" alt="og_img" src="https://github.com/user-attachments/assets/cdf11c12-3c4a-46e9-ad5c-08c61e0a35e4" />
+
+
 ## Features
 
 - **Default Bus Stop ID:** Automatically defaults to bus stop `70049` if no ID is provided in the URL.
