@@ -260,6 +260,29 @@
 				line-height: 1.5;
 			}
 			
+			/* Favorites Section Styling */
+			.favorite-item:hover {
+				background-color: #e9ecef !important;
+			}
+
+			.favorite-btn {
+				transition: all 0.2s ease;
+			}
+
+			.favorite-btn:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+			}
+
+			.current-bus-stop {
+				animation: fadeIn 0.3s ease-in;
+			}
+
+			@keyframes fadeIn {
+				from { opacity: 0; transform: translateY(10px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+
 			/* Responsive Adjustments */
 			@media (max-width: 600px) {
 				.service-table th:nth-child(1),
@@ -381,7 +404,29 @@
 					<input type="hidden" id="filter_bus_no" name="filter_bus_no" value="">
 
 					<button type="submit">Check Arrival</button>
+
+					<!-- Favorites Toggle Button -->
+					<div style="margin-top: 15px; text-align: center;">
+						<button type="button" id="showFavoritesBtn" style="
+							padding: 8px 16px; background-color: #28a745; color: #fff; border: none;
+							border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+						">⭐ Show My Favorites</button>
+					</div>
 				</form>
+
+				<!-- Current Bus Stop Info and Favorite -->
+				<div id="currentBusStopSection" class="current-bus-stop" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd; display: none;">
+					<div style="display: flex; justify-content: space-between; align-items: center;">
+						<div>
+							<strong>Current Bus Stop: <span id="currentBusStopId"></span></strong>
+							<div id="currentBusStopName" style="font-size: 0.9rem; color: #666; margin-top: 4px;"></div>
+						</div>
+						<button id="busStopFavBtn" class="favorite-btn bus-stop-fav-btn" style="
+							background: none; border: 1px solid #007bff; color: #007bff; padding: 8px 12px;
+							border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+						">🤍 Add to Favorites</button>
+					</div>
+				</div>
 
 				<div class="nearby-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
 					<p style="margin-bottom: 15px; color: #666; font-size: 0.95rem;">Need to find a bus stop?</p>
@@ -401,8 +446,37 @@
 				</div>
 			</div>
 		</section>
-		
-		<section id="content">
+
+	<!-- Favorites Section -->
+	<section id="favorites-section" class="favorites-section" style="width: 90%; max-width: 700px; margin: 30px auto; display: none;">
+		<div class="favorites-container" style="background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border: 1px solid #000;">
+			<h2 style="margin-bottom: 20px; font-size: 1.5rem; border-bottom: 1px solid #000; padding-bottom: 10px; color: #000;">⭐ My Favorites</h2>
+
+			<!-- Bus Stop Favorites -->
+			<div class="favorites-group" id="busStopFavorites" style="margin-bottom: 30px;">
+				<h3 style="margin-bottom: 15px; font-size: 1.2rem; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Bus Stop Favorites</h3>
+				<div id="busStopFavoritesList" style="display: flex; flex-direction: column; gap: 10px;">
+					<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>
+				</div>
+			</div>
+
+			<!-- Bus Service Favorites -->
+			<div class="favorites-group" id="busServiceFavorites">
+				<h3 style="margin-bottom: 15px; font-size: 1.2rem; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Bus Service Favorites</h3>
+				<div id="busServiceFavoritesList" style="display: flex; flex-direction: column; gap: 10px;">
+					<p style="color: #666; font-style: italic;">No favorite bus services yet. When you see a bus service in the results, click the heart icon to add it here.</p>
+				</div>
+			</div>
+
+			<!-- Quick Actions -->
+			<div class="favorites-actions" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+				<button type="button" id="clearAllFavorites" style="padding: 10px 20px; background-color: #dc3545; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Clear All Favorites</button>
+				<button type="button" id="toggleFavorites" style="padding: 10px 20px; background-color: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-left: 10px;">Hide Favorites</button>
+			</div>
+		</div>
+	</section>
+
+	<section id="content">
 			<div id="loading">Loading bus arrival data, please wait...</div>
 			<div id="error" class="hidden"></div>
 			<div id="services"></div>
@@ -435,6 +509,244 @@
 				const DEFAULT_ID = '70049';
 				const POLLING_INTERVAL_MS = 15000; // 15000 = 15 seconds
 				const urlParams = new URLSearchParams(window.location.search);
+
+				// localStorage favorites management
+				const FAVORITES_KEY = 'sg_bus_favorites';
+
+				function getFavorites() {
+					try {
+						const favorites = localStorage.getItem(FAVORITES_KEY);
+						return favorites ? JSON.parse(favorites) : { busStops: [], busServices: [] };
+					} catch (e) {
+						console.error('Error loading favorites:', e);
+						return { busStops: [], busServices: [] };
+					}
+				}
+
+				function saveFavorites(favorites) {
+					try {
+						localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+					} catch (e) {
+						console.error('Error saving favorites:', e);
+					}
+				}
+
+				function addBusStopFavorite(busStopId, busStopName = '') {
+					const favorites = getFavorites();
+					if (!favorites.busStops.some(stop => stop.id === busStopId)) {
+						favorites.busStops.push({ id: busStopId, name: busStopName, dateAdded: new Date().toISOString() });
+						saveFavorites(favorites);
+						return true;
+					}
+					return false;
+				}
+
+				function removeBusStopFavorite(busStopId) {
+					const favorites = getFavorites();
+					const initialLength = favorites.busStops.length;
+					favorites.busStops = favorites.busStops.filter(stop => stop.id !== busStopId);
+					if (favorites.busStops.length < initialLength) {
+						saveFavorites(favorites);
+						return true;
+					}
+					return false;
+				}
+
+				function addBusServiceFavorite(serviceNo, operator = '') {
+					const favorites = getFavorites();
+					if (!favorites.busServices.some(service => service.no === serviceNo)) {
+						favorites.busServices.push({ no: serviceNo, operator: operator, dateAdded: new Date().toISOString() });
+						saveFavorites(favorites);
+						return true;
+					}
+					return false;
+				}
+
+				function removeBusServiceFavorite(serviceNo) {
+					const favorites = getFavorites();
+					const initialLength = favorites.busServices.length;
+					favorites.busServices = favorites.busServices.filter(service => service.no !== serviceNo);
+					if (favorites.busServices.length < initialLength) {
+						saveFavorites(favorites);
+						return true;
+					}
+					return false;
+				}
+
+				function isBusStopFavorite(busStopId) {
+					const favorites = getFavorites();
+					return favorites.busStops.some(stop => stop.id === busStopId);
+				}
+
+				function isBusServiceFavorite(serviceNo) {
+					const favorites = getFavorites();
+					return favorites.busServices.some(service => service.no === serviceNo);
+				}
+
+				function renderFavorites() {
+					const favorites = getFavorites();
+					const favoritesSection = document.getElementById('favorites-section');
+					const busStopList = document.getElementById('busStopFavoritesList');
+					const busServiceList = document.getElementById('busServiceFavoritesList');
+
+					// Show/hide favorites section based on whether there are any favorites
+					if (favorites.busStops.length > 0 || favorites.busServices.length > 0) {
+						favoritesSection.style.display = 'block';
+					} else {
+						favoritesSection.style.display = 'none';
+					}
+
+					// Render bus stop favorites
+					if (favorites.busStops.length > 0) {
+						busStopList.innerHTML = '';
+						favorites.busStops.forEach(stop => {
+							const stopItem = document.createElement('div');
+							stopItem.className = 'favorite-item';
+							stopItem.style.cssText = `
+								display: flex; justify-content: space-between; align-items: center;
+								padding: 12px; background: #f8f9fa; border: 1px solid #ddd;
+								border-radius: 6px; margin-bottom: 8px;
+							`;
+
+							stopItem.innerHTML = `
+								<div class="favorite-info" style="flex-grow: 1;">
+									<strong>Bus Stop ${stop.id}</strong>
+									${stop.name ? `<br><small style="color: #666;">${stop.name}</small>` : ''}
+								</div>
+								<div class="favorite-actions" style="display: flex; gap: 8px;">
+									<button class="use-favorite-btn" onclick="useFavoriteBusStop('${stop.id}')" style="
+										padding: 6px 12px; background: #007bff; color: white; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+									">Use</button>
+									<button class="remove-favorite-btn" onclick="removeBusStopFavorite('${stop.id}')" style="
+										padding: 6px 12px; background: #dc3545; color: white; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+									">Remove</button>
+								</div>
+							`;
+							busStopList.appendChild(stopItem);
+						});
+					} else {
+						busStopList.innerHTML = '<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>';
+					}
+
+					// Render bus service favorites
+					if (favorites.busServices.length > 0) {
+						busServiceList.innerHTML = '';
+						favorites.busServices.forEach(service => {
+							const serviceItem = document.createElement('div');
+							serviceItem.className = 'favorite-item';
+							serviceItem.style.cssText = `
+								display: flex; justify-content: space-between; align-items: center;
+								padding: 12px; background: #f8f9fa; border: 1px solid #ddd;
+								border-radius: 6px; margin-bottom: 8px;
+							`;
+
+							serviceItem.innerHTML = `
+								<div class="favorite-info" style="flex-grow: 1;">
+									<strong>Bus Service ${service.no}</strong>
+									${service.operator ? `<br><small style="color: #666;">${service.operator}</small>` : ''}
+								</div>
+								<div class="favorite-actions" style="display: flex; gap: 8px;">
+									<button class="add-filter-btn" onclick="addServiceToFilter('${service.no}')" style="
+										padding: 6px 12px; background: #28a745; color: white; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+									">Add Filter</button>
+									<button class="remove-favorite-btn" onclick="removeBusServiceFavorite('${service.no}')" style="
+										padding: 6px 12px; background: #dc3545; color: white; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+									">Remove</button>
+								</div>
+							`;
+							busServiceList.appendChild(serviceItem);
+						});
+					} else {
+						busServiceList.innerHTML = '<p style="color: #666; font-style: italic;">No favorite bus services yet. When you see a bus service in the results, click the heart icon to add it here.</p>';
+					}
+				}
+
+				function useFavoriteBusStop(busStopId) {
+					document.getElementById('busId').value = busStopId;
+					document.getElementById('idForm').dispatchEvent(new Event('submit'));
+				}
+
+				function addServiceToFilter(serviceNo) {
+					const currentFilter = tags.join(',');
+					if (currentFilter && !currentFilter.includes(serviceNo)) {
+						tags.push(serviceNo);
+						refreshTags();
+						document.getElementById('idForm').dispatchEvent(new Event('submit'));
+					} else if (!currentFilter.includes(serviceNo)) {
+						tags.push(serviceNo);
+						refreshTags();
+						document.getElementById('idForm').dispatchEvent(new Event('submit'));
+					}
+				}
+
+				function toggleFavoritesSection() {
+					const section = document.getElementById('favorites-section');
+					if (section.style.display === 'none') {
+						section.style.display = 'block';
+						document.getElementById('toggleFavorites').textContent = 'Hide Favorites';
+					} else {
+						section.style.display = 'none';
+						document.getElementById('toggleFavorites').textContent = 'Show Favorites';
+					}
+				}
+
+				function updateCurrentBusStopDisplay(busStopId, busStopName = '') {
+					const section = document.getElementById('currentBusStopSection');
+					const idSpan = document.getElementById('currentBusStopId');
+					const nameDiv = document.getElementById('currentBusStopName');
+					const favBtn = document.getElementById('busStopFavBtn');
+
+					if (busStopId) {
+						idSpan.textContent = busStopId;
+						nameDiv.textContent = busStopName || '';
+						section.style.display = 'block';
+
+						// Update favorite button state
+						if (isBusStopFavorite(busStopId)) {
+							favBtn.innerHTML = '❤️ Remove from Favorites';
+							favBtn.style.backgroundColor = '#dc3545';
+							favBtn.style.color = '#fff';
+							favBtn.title = 'Remove from favorites';
+						} else {
+							favBtn.innerHTML = '🤍 Add to Favorites';
+							favBtn.style.backgroundColor = '#007bff';
+							favBtn.style.color = '#fff';
+							favBtn.title = 'Add to favorites';
+						}
+
+						// Add event listener for favorite button
+						favBtn.onclick = function() {
+							if (isBusStopFavorite(busStopId)) {
+								removeBusStopFavorite(busStopId);
+								favBtn.innerHTML = '🤍 Add to Favorites';
+								favBtn.style.backgroundColor = '#007bff';
+								favBtn.style.color = '#fff';
+								favBtn.title = 'Add to favorites';
+							} else {
+								addBusStopFavorite(busStopId, busStopName);
+								favBtn.innerHTML = '❤️ Remove from Favorites';
+								favBtn.style.backgroundColor = '#dc3545';
+								favBtn.style.color = '#fff';
+								favBtn.title = 'Remove from favorites';
+							}
+							renderFavorites();
+						};
+					} else {
+						section.style.display = 'none';
+					}
+				}
+
+				// Make favorite functions globally available for onclick handlers
+				window.addBusStopFavorite = addBusStopFavorite;
+				window.removeBusStopFavorite = removeBusStopFavorite;
+				window.addBusServiceFavorite = addBusServiceFavorite;
+				window.removeBusServiceFavorite = removeBusServiceFavorite;
+				window.useFavoriteBusStop = useFavoriteBusStop;
+				window.addServiceToFilter = addServiceToFilter;
 				
 				const busIdInput = document.getElementById('busId');
 				const filterBusNoInput = document.querySelector("#filter_bus_no");
@@ -468,6 +780,7 @@
 					setupEventListeners();
 					fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
 					pollingInterval = setInterval(() => fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value), POLLING_INTERVAL_MS);
+					renderFavorites(); // Initialize favorites display
 				}
 				
 				function refreshTags() {
@@ -508,6 +821,26 @@
 						this.style.backgroundColor = '#fff';
 						this.style.color = '#000';
 						this.style.transform = 'translateY(0)';
+					});
+
+					// Favorites management buttons
+					document.getElementById('toggleFavorites').addEventListener('click', toggleFavoritesSection);
+					document.getElementById('showFavoritesBtn').addEventListener('click', function() {
+						const section = document.getElementById('favorites-section');
+						if (section.style.display === 'none' || section.style.display === '') {
+							renderFavorites(); // Refresh favorites display
+							section.style.display = 'block';
+							this.textContent = '⭐ Hide My Favorites';
+						} else {
+							section.style.display = 'none';
+							this.textContent = '⭐ Show My Favorites';
+						}
+					});
+					document.getElementById('clearAllFavorites').addEventListener('click', function() {
+						if (confirm('Are you sure you want to clear all favorites?')) {
+							localStorage.removeItem(FAVORITES_KEY);
+							renderFavorites();
+						}
 					});
 
 					tagInput.addEventListener('keydown', function (e) {
@@ -573,7 +906,9 @@
 					.then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
 					.then(data => {
 						loadingDiv.classList.add('hidden');
-						displayServices(data, busNoFilter);
+						displayServices(data, busNoFilter, busId);
+						// Update current bus stop display after successful data fetch
+						updateCurrentBusStopDisplay(busId, data.bus_stop_id ? `Bus Stop ${data.bus_stop_id}` : '');
 					})
 					.catch(error => {
 						loadingDiv.classList.add('hidden');
@@ -582,24 +917,83 @@
 					});
 				}
 				
-				function displayServices(data, busNoFilter) {
+				function displayServices(data, busNoFilter, currentBusId) {
 					servicesDiv.innerHTML = '';
 					if (!data.services || data.services.length === 0) {
 						servicesDiv.innerHTML = '<p style="text-align:center;">No bus arrivals found at this stop.</p>';
 						return;
 					}
-					
+
 					const filterArray = busNoFilter ? busNoFilter.split(',').map(item => item.trim()) : [];
-					
+					const favorites = getFavorites();
+
+					// Separate favorite and non-favorite services
+					const favoriteServices = [];
+					const regularServices = [];
+
 					data.services.forEach(service => {
 						if (filterArray.length > 0 && !filterArray.includes(service.no)) return;
-						
+
+						if (favorites.busServices.some(fav => fav.no === service.no)) {
+							favoriteServices.push(service);
+						} else {
+							regularServices.push(service);
+						}
+					});
+
+					// Combine arrays: favorites first, then regular services
+					const sortedServices = [...favoriteServices, ...regularServices];
+
+					sortedServices.forEach(service => {
 						const seen = new Set();
 						const serviceContainer = document.createElement('div');
 						serviceContainer.className = 'service';
 						serviceContainer.setAttribute('data-id', service.no);
+
+						// Add visual styling for favorite services
+						const serviceIsFavorite = favorites.busServices.some(fav => fav.no === service.no);
+						if (serviceIsFavorite) {
+							serviceContainer.style.border = '2px solid #ffc107';
+							serviceContainer.style.backgroundColor = '#fffbf0';
+						}
+
+						// Create header with favorite button for bus service
 						const header = document.createElement('h2');
-						header.textContent = `${service.no} from ${service.operator}`;
+						header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;';
+
+						const headerText = document.createElement('span');
+						const headerIsFavorite = favorites.busServices.some(fav => fav.no === service.no);
+						headerText.innerHTML = `
+							<strong>${service.no}</strong> from ${service.operator}
+							<br><small style="font-size: 0.8rem; color: #666; font-weight: normal;">Bus Stop: ${currentBusId}</small>
+							${headerIsFavorite ? '<br><small style="font-size: 0.7rem; color: #ffc107; font-weight: bold;">⭐ Favorite</small>' : ''}
+						`;
+						header.appendChild(headerText);
+
+						// Add favorite button for bus service
+						const serviceFavBtn = document.createElement('button');
+						serviceFavBtn.className = 'favorite-btn service-fav-btn';
+						serviceFavBtn.innerHTML = isBusServiceFavorite(service.no) ? '❤️' : '🤍';
+						serviceFavBtn.title = isBusServiceFavorite(service.no) ? 'Remove from favorites' : 'Add to favorites';
+						serviceFavBtn.style.cssText = `
+							background: none; border: none; font-size: 1.2rem; cursor: pointer;
+							padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s;
+						`;
+						serviceFavBtn.onclick = function(e) {
+							e.stopPropagation();
+							if (isBusServiceFavorite(service.no)) {
+								removeBusServiceFavorite(service.no);
+								this.innerHTML = '🤍';
+								this.title = 'Add to favorites';
+							} else {
+								addBusServiceFavorite(service.no, service.operator);
+								this.innerHTML = '❤️';
+								this.title = 'Remove from favorites';
+							}
+							renderFavorites();
+						};
+						header.appendChild(serviceFavBtn);
+
 						serviceContainer.appendChild(header);
 						
 						const table = document.createElement('table');
