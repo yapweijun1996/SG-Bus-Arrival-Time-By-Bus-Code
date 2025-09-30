@@ -287,6 +287,13 @@
 				.service-table td:nth-child(5){
 					font-size: 4vw;
 				}
+
+				/* Mobile styles for nearby button */
+				#nearbyBtn {
+					font-size: 0.9rem !important;
+					padding: 12px 20px !important;
+					max-width: none !important;
+				}
 				.legend {
 					font-size: 5.5vw;
 					line-height: 1.6;
@@ -364,17 +371,34 @@
 				<form id="idForm">
 					<label for="busId">Bus Stop ID</label>
 					<input type="text" id="busId" name="busId" placeholder="70049">
-					
+
 					<label for="busTags">Bus Service Filter (Optional, use tags below)</label>
 					<div class="tag-container" id="tagContainer">
 						<input type="text" class="tag-input" id="tagInput" placeholder="Type a number and press Enter">
 					</div>
-					
+
 					<input type="hidden" id="busNo" name="busNo" value="">
 					<input type="hidden" id="filter_bus_no" name="filter_bus_no" value="">
-					
+
 					<button type="submit">Check Arrival</button>
 				</form>
+
+				<div class="nearby-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+					<p style="margin-bottom: 15px; color: #666; font-size: 0.95rem;">Need to find a bus stop?</p>
+					<button type="button" id="nearbyBtn" style="
+						padding: 12px 24px;
+						background-color: #fff;
+						color: #000;
+						font-size: 1rem;
+						font-weight: 500;
+						border: 2px solid #000;
+						border-radius: 6px;
+						cursor: pointer;
+						transition: all 0.3s ease;
+						width: 100%;
+						max-width: 250px;
+					">📍 Find Nearby Bus Stops</button>
+				</div>
 			</div>
 		</section>
 		
@@ -467,6 +491,25 @@
 				}
 				
 				function setupEventListeners() {
+					// Nearby bus stops button functionality
+					const nearbyBtn = document.getElementById('nearbyBtn');
+					nearbyBtn.addEventListener('click', function() {
+						window.open('https://yapweijun1996.github.io/Nearby-Bus-Stop-v2/', '_blank');
+					});
+
+					// Hover effects for nearby button
+					nearbyBtn.addEventListener('mouseenter', function() {
+						this.style.backgroundColor = '#000';
+						this.style.color = '#fff';
+						this.style.transform = 'translateY(-2px)';
+					});
+
+					nearbyBtn.addEventListener('mouseleave', function() {
+						this.style.backgroundColor = '#fff';
+						this.style.color = '#000';
+						this.style.transform = 'translateY(0)';
+					});
+
 					tagInput.addEventListener('keydown', function (e) {
 						if (e.key === 'Enter' || e.key === ',') {
 							e.preventDefault();
@@ -483,9 +526,9 @@
 							refreshTags();
 						}
 					});
-					
+
 					tagContainer.addEventListener('click', () => tagInput.focus());
-					
+
 					idForm.addEventListener('submit', function (event) {
 						event.preventDefault();
 						
