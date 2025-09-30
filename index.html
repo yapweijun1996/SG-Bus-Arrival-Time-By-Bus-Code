@@ -1210,18 +1210,38 @@
 								const busNo = this.getAttribute('data-id');
 								console.log(`Fetching data for Service ${busNo}`);
 
+								// 查找并隐藏收藏夹元素
+								const header = this.querySelector('h2');
+								if (header) {
+									// 查找收藏夹文字（⭐ Favorite）
+									const smallElements = header.querySelectorAll('small');
+									for (let el of smallElements) {
+										if (el.textContent && el.textContent.includes('⭐ Favorite')) {
+											el.style.display = 'none';
+											break;
+										}
+									}
+								}
+
+								// 查找并隐藏收藏夹按钮
+								const favoriteBtn = this.querySelector('.favorite-btn.service-fav-btn');
+								if (favoriteBtn) {
+									favoriteBtn.style.display = 'none';
+								}
+
 								// 完全变黑效果 - 设置所有视觉元素为黑色
 								this.style.transition = 'all 0.3s ease-in-out';
 								this.style.backgroundColor = 'black';
 								this.style.borderColor = 'black';
 
 								// 设置所有子元素为完全黑色
-								this.querySelectorAll('*').forEach(child => {
+								const allElements = this.querySelectorAll('*');
+								for (let child of allElements) {
 									child.style.transition = 'all 0.3s ease-in-out';
 									child.style.backgroundColor = 'black';
 									child.style.color = 'black';
 									child.style.borderColor = 'black';
-								});
+								}
 
 								setTimeout(() => {
 									fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
