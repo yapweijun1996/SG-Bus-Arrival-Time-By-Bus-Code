@@ -103,10 +103,141 @@
 				cursor: pointer;
 				transition: background 0.3s ease, transform 0.2s ease;
 			}
-			
+
 			.search-section button:hover {
 				background-color: #333;
 				transform: translateY(-2px);
+			}
+
+			/* Unified Button System */
+			.btn {
+				padding: 10px 20px;
+				border-radius: 6px;
+				cursor: pointer;
+				font-size: 0.9rem;
+				font-weight: 500;
+				transition: all 0.3s ease;
+				border: 2px solid;
+				text-decoration: none;
+				display: inline-block;
+				text-align: center;
+			}
+
+			.btn-primary {
+				background-color: #000;
+				color: #fff;
+				border-color: #000;
+			}
+
+			.btn-primary:hover {
+				background-color: #333;
+				transform: translateY(-2px);
+			}
+
+			.btn-secondary {
+				background-color: #fff;
+				color: #000;
+				border-color: #000;
+			}
+
+			.btn-secondary:hover {
+				background-color: #f8f9fa;
+				transform: translateY(-2px);
+			}
+
+			.btn-success {
+				background-color: #28a745;
+				color: #fff;
+				border-color: #28a745;
+			}
+
+			.btn-success:hover {
+				background-color: #218838;
+				transform: translateY(-1px);
+			}
+
+			.btn-danger {
+				background-color: #dc3545;
+				color: #fff;
+				border-color: #dc3545;
+			}
+
+			.btn-danger:hover {
+				background-color: #c82333;
+				transform: translateY(-1px);
+			}
+
+			.btn-warning {
+				background-color: #ffc107;
+				color: #000;
+				border-color: #ffc107;
+			}
+
+			.btn-warning:hover {
+				background-color: #e0a800;
+				transform: translateY(-1px);
+			}
+
+			.btn-info {
+				background-color: #007bff;
+				color: #fff;
+				border-color: #007bff;
+			}
+
+			.btn-info:hover {
+				background-color: #0056b3;
+				transform: translateY(-1px);
+			}
+
+			.btn-link {
+				background: none;
+				border: none;
+				color: #007bff;
+				padding: 8px 12px;
+			}
+
+			.btn-link:hover {
+				color: #0056b3;
+				transform: translateY(-1px);
+			}
+
+			.btn-favorite {
+				background: none;
+				border: 1px solid #007bff;
+				color: #007bff;
+				padding: 8px 12px;
+			}
+
+			.btn-favorite:hover {
+				background-color: #007bff;
+				color: #fff;
+				transform: translateY(-1px);
+			}
+
+			.btn-small {
+				padding: 4px 8px;
+				font-size: 0.7rem;
+			}
+
+			.btn-large {
+				padding: 12px 24px;
+				font-size: 1rem;
+				width: 100%;
+				max-width: 250px;
+			}
+
+			/* Specific overrides for wide buttons */
+			#nearbyBtn,
+			#showFavoritesBtn {
+				max-width: 700px;
+				background-color: #fff;
+				border: 3px solid #000;
+				color: #000;
+			}
+			#nearbyBtn:hover,
+			#showFavoritesBtn:hover{
+				background-color: #000;
+				color: #fff;
 			}
 			
 			/* Tag Input Container */
@@ -284,6 +415,40 @@
 			}
 
 			/* Responsive Adjustments */
+			@media (max-width: 400px) {
+				/* Current bus stop section for very small screens (333px) */
+				#currentBusStopSection {
+					padding: 12px !important;
+					margin-top: 15px !important;
+				}
+
+				#currentBusStopSection > div {
+					flex-direction: column !important;
+					align-items: flex-start !important;
+					gap: 12px !important;
+				}
+
+				#currentBusStopSection strong {
+					font-size: 0.95rem !important;
+					display: block;
+					margin-bottom: 4px;
+				}
+
+				#currentBusStopSection #currentBusStopName {
+					font-size: 0.85rem !important;
+					margin-top: 2px !important;
+					line-height: 1.3;
+				}
+
+				#currentBusStopSection #busStopFavBtn {
+					width: 100% !important;
+					padding: 10px 12px !important;
+					font-size: 0.85rem !important;
+					margin-top: 8px;
+					max-width: none !important;
+				}
+			}
+
 			@media (max-width: 600px) {
 				.service-table th:nth-child(1),
 				.service-table th:nth-child(2),
@@ -407,11 +572,7 @@
 
 					<!-- Favorites Toggle Button -->
 					<div style="margin-top: 15px; text-align: center;">
-						<button type="button" id="showFavoritesBtn" style="
-							padding: 10px 20px; background-color: #fff; color: #000; border: 2px solid #000;
-							border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500;
-							transition: all 0.3s ease; width: 100%; max-width: 250px;
-						">⭐ Show My Favorites</button>
+						<button type="button" id="showFavoritesBtn" class="btn btn-secondary btn-large">⭐ Bus Stop Favorites</button>
 					</div>
 				</form>
 
@@ -422,28 +583,13 @@
 							<strong>Current Bus Stop: <span id="currentBusStopId"></span></strong>
 							<div id="currentBusStopName" style="font-size: 0.9rem; color: #666; margin-top: 4px;"></div>
 						</div>
-						<button id="busStopFavBtn" class="favorite-btn bus-stop-fav-btn" style="
-							background: none; border: 1px solid #007bff; color: #007bff; padding: 8px 12px;
-							border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
-						">🤍 Add to Favorites</button>
+						<button id="busStopFavBtn" class="btn btn-favorite">🤍 Add to Favorites</button>
 					</div>
 				</div>
 
 				<div class="nearby-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
 					<p style="margin-bottom: 15px; color: #666; font-size: 0.95rem;">Need to find a bus stop?</p>
-					<button type="button" id="nearbyBtn" style="
-						padding: 12px 24px;
-						background-color: #fff;
-						color: #000;
-						font-size: 1rem;
-						font-weight: 500;
-						border: 2px solid #000;
-						border-radius: 6px;
-						cursor: pointer;
-						transition: all 0.3s ease;
-						width: 100%;
-						max-width: 250px;
-					">📍 Find Nearby Bus Stops</button>
+					<button type="button" id="nearbyBtn" class="btn btn-secondary btn-large">📍 Find Nearby Bus Stops</button>
 				</div>
 			</div>
 		</section>
@@ -461,10 +607,7 @@
 			position: relative;
 		">
 			<!-- Close button -->
-			<button id="closeFavoritesModal" style="
-				position: absolute; top: 15px; right: 15px; background: none; border: none;
-				font-size: 1.5rem; cursor: pointer; color: #666; padding: 5px;
-			">×</button>
+			<button id="closeFavoritesModal" class="btn btn-link" style="position: absolute; top: 15px; right: 15px; font-size: 1.5rem;">×</button>
 			<h2 style="margin-bottom: 20px; font-size: 1.5rem; border-bottom: 1px solid #000; padding-bottom: 10px; color: #000;">⭐ My Bus Stop Favorites</h2>
 
 			<!-- Bus Stop Favorites -->
@@ -478,7 +621,7 @@
 
 			<!-- Quick Actions -->
 			<div class="favorites-actions" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
-				<button type="button" id="clearAllFavorites" style="padding: 10px 20px; background-color: #dc3545; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Clear All Favorites</button>
+				<button type="button" id="clearAllFavorites" class="btn btn-danger">Clear All Favorites</button>
 			</div>
 		</div>
 	</div>
@@ -824,18 +967,8 @@
 						window.open('https://yapweijun1996.github.io/Nearby-Bus-Stop-v2/', '_blank');
 					});
 
-					// Hover effects for nearby button
-					nearbyBtn.addEventListener('mouseenter', function() {
-						this.style.backgroundColor = '#000';
-						this.style.color = '#fff';
-						this.style.transform = 'translateY(-2px)';
-					});
-
-					nearbyBtn.addEventListener('mouseleave', function() {
-						this.style.backgroundColor = '#fff';
-						this.style.color = '#000';
-						this.style.transform = 'translateY(0)';
-					});
+					// Note: Hover effects are now handled by CSS classes (btn-secondary:hover)
+					// Removed manual style manipulation to allow CSS classes to work properly
 
 					// Favorites management buttons (toggleFavorites button removed)
 					document.getElementById('showFavoritesBtn').addEventListener('click', function() {
