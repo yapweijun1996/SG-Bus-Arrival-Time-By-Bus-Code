@@ -1125,7 +1125,6 @@
 						const headerIsFavorite = favorites.busServices.some(fav => fav.no === service.no);
 						headerText.innerHTML = `
 							<strong>${service.no}</strong> from ${service.operator}
-							${headerIsFavorite ? '<br><small style="font-size: 0.7rem; color: #ffc107; font-weight: bold;">⭐ Favorite</small>' : ''}
 						`;
 						header.appendChild(headerText);
 
