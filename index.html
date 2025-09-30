@@ -479,7 +479,6 @@
 			<!-- Quick Actions -->
 			<div class="favorites-actions" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
 				<button type="button" id="clearAllFavorites" style="padding: 10px 20px; background-color: #dc3545; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Clear All Favorites</button>
-				<button type="button" id="toggleFavorites" style="padding: 10px 20px; background-color: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-left: 10px;">Hide Favorites</button>
 			</div>
 		</div>
 	</div>
@@ -779,17 +778,7 @@
 					}
 				}
 
-				function toggleFavoritesModal() {
-					const modal = document.getElementById('favorites-modal');
-					if (modal.style.display === 'none' || modal.style.display === '') {
-						renderFavorites(); // Refresh favorites display
-						modal.style.display = 'flex';
-						document.getElementById('toggleFavorites').textContent = 'Hide Favorites';
-					} else {
-						modal.style.display = 'none';
-						document.getElementById('toggleFavorites').textContent = 'Show Favorites';
-					}
-				}
+				// toggleFavoritesModal function removed since the button no longer exists
 
 				function updateCurrentBusStopDisplay(busStopId, busStopName = '') {
 					const section = document.getElementById('currentBusStopSection');
@@ -929,8 +918,7 @@
 						this.style.transform = 'translateY(0)';
 					});
 
-					// Favorites management buttons
-					document.getElementById('toggleFavorites').addEventListener('click', toggleFavoritesModal);
+					// Favorites management buttons (toggleFavorites button removed)
 					document.getElementById('showFavoritesBtn').addEventListener('click', function() {
 						const modal = document.getElementById('favorites-modal');
 						if (modal.style.display === 'none' || modal.style.display === '') {
@@ -946,7 +934,6 @@
 					// Close modal button
 					document.getElementById('closeFavoritesModal').addEventListener('click', function() {
 						document.getElementById('favorites-modal').style.display = 'none';
-						document.getElementById('toggleFavorites').textContent = 'Show Favorites';
 						document.getElementById('showFavoritesBtn').textContent = '⭐ Show My Favorites';
 					});
 
@@ -954,7 +941,6 @@
 					document.getElementById('favorites-modal').addEventListener('click', function(e) {
 						if (e.target === this) {
 							this.style.display = 'none';
-							document.getElementById('toggleFavorites').textContent = 'Show Favorites';
 							document.getElementById('showFavoritesBtn').textContent = '⭐ Show My Favorites';
 						}
 					});
