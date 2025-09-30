@@ -613,6 +613,12 @@
 					const busStopList = document.getElementById('busStopFavoritesList');
 					const busServiceList = document.getElementById('busServiceFavoritesList');
 
+					// Check if elements exist before using them
+					if (!favoritesModal || !busStopList || !busServiceList) {
+						console.warn('Favorites elements not found in DOM');
+						return;
+					}
+
 					// Show/hide favorites modal based on whether there are any favorites
 					if (favorites.busStops.length > 0 || favorites.busServices.length > 0) {
 						favoritesModal.style.display = 'flex';
