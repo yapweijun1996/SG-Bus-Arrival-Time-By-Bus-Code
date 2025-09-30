@@ -408,8 +408,9 @@
 					<!-- Favorites Toggle Button -->
 					<div style="margin-top: 15px; text-align: center;">
 						<button type="button" id="showFavoritesBtn" style="
-							padding: 8px 16px; background-color: #28a745; color: #fff; border: none;
-							border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+							padding: 10px 20px; background-color: #fff; color: #000; border: 2px solid #000;
+							border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500;
+							transition: all 0.3s ease; width: 100%; max-width: 250px;
 						">⭐ Show My Favorites</button>
 					</div>
 				</form>
@@ -447,9 +448,23 @@
 			</div>
 		</section>
 
-	<!-- Favorites Section -->
-	<section id="favorites-section" class="favorites-section" style="width: 90%; max-width: 700px; margin: 30px auto; display: none;">
-		<div class="favorites-container" style="background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border: 1px solid #000;">
+	<!-- Favorites Modal -->
+	<div id="favorites-modal" class="favorites-modal" style="
+		position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+		background: rgba(0, 0, 0, 0.5); z-index: 1000; display: none;
+		align-items: center; justify-content: center; padding: 20px;
+	">
+		<div class="favorites-container" style="
+			background: #fff; padding: 25px; border-radius: 10px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border: 1px solid #000;
+			width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;
+			position: relative;
+		">
+			<!-- Close button -->
+			<button id="closeFavoritesModal" style="
+				position: absolute; top: 15px; right: 15px; background: none; border: none;
+				font-size: 1.5rem; cursor: pointer; color: #666; padding: 5px;
+			">×</button>
 			<h2 style="margin-bottom: 20px; font-size: 1.5rem; border-bottom: 1px solid #000; padding-bottom: 10px; color: #000;">⭐ My Favorites</h2>
 
 			<!-- Bus Stop Favorites -->
@@ -460,13 +475,6 @@
 				</div>
 			</div>
 
-			<!-- Bus Service Favorites -->
-			<div class="favorites-group" id="busServiceFavorites">
-				<h3 style="margin-bottom: 15px; font-size: 1.2rem; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Bus Service Favorites</h3>
-				<div id="busServiceFavoritesList" style="display: flex; flex-direction: column; gap: 10px;">
-					<p style="color: #666; font-style: italic;">No favorite bus services yet. When you see a bus service in the results, click the heart icon to add it here.</p>
-				</div>
-			</div>
 
 			<!-- Quick Actions -->
 			<div class="favorites-actions" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
@@ -474,7 +482,7 @@
 				<button type="button" id="toggleFavorites" style="padding: 10px 20px; background-color: #6c757d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-left: 10px;">Hide Favorites</button>
 			</div>
 		</div>
-	</section>
+	</div>
 
 	<section id="content">
 			<div id="loading">Loading bus arrival data, please wait...</div>
@@ -531,10 +539,15 @@
 					}
 				}
 
-				function addBusStopFavorite(busStopId, busStopName = '') {
+				function addBusStopFavorite(busStopId, busStopName = '', customName = '') {
 					const favorites = getFavorites();
 					if (!favorites.busStops.some(stop => stop.id === busStopId)) {
-						favorites.busStops.push({ id: busStopId, name: busStopName, dateAdded: new Date().toISOString() });
+						favorites.busStops.push({
+							id: busStopId,
+							name: busStopName,
+							customName: customName,
+							dateAdded: new Date().toISOString()
+						});
 						saveFavorites(favorites);
 						return true;
 					}
@@ -546,6 +559,17 @@
 					const initialLength = favorites.busStops.length;
 					favorites.busStops = favorites.busStops.filter(stop => stop.id !== busStopId);
 					if (favorites.busStops.length < initialLength) {
+						saveFavorites(favorites);
+						return true;
+					}
+					return false;
+				}
+
+				function updateBusStopCustomName(busStopId, customName) {
+					const favorites = getFavorites();
+					const stop = favorites.busStops.find(stop => stop.id === busStopId);
+					if (stop) {
+						stop.customName = customName;
 						saveFavorites(favorites);
 						return true;
 					}
@@ -585,15 +609,15 @@
 
 				function renderFavorites() {
 					const favorites = getFavorites();
-					const favoritesSection = document.getElementById('favorites-section');
+					const favoritesModal = document.getElementById('favorites-modal');
 					const busStopList = document.getElementById('busStopFavoritesList');
 					const busServiceList = document.getElementById('busServiceFavoritesList');
 
-					// Show/hide favorites section based on whether there are any favorites
+					// Show/hide favorites modal based on whether there are any favorites
 					if (favorites.busStops.length > 0 || favorites.busServices.length > 0) {
-						favoritesSection.style.display = 'block';
+						favoritesModal.style.display = 'flex';
 					} else {
-						favoritesSection.style.display = 'none';
+						favoritesModal.style.display = 'none';
 					}
 
 					// Render bus stop favorites
@@ -605,15 +629,30 @@
 							stopItem.style.cssText = `
 								display: flex; justify-content: space-between; align-items: center;
 								padding: 12px; background: #f8f9fa; border: 1px solid #ddd;
-								border-radius: 6px; margin-bottom: 8px;
+								border-radius: 6px; margin-bottom: 8px; cursor: pointer;
+								transition: background-color 0.2s ease;
 							`;
+							stopItem.onclick = function(e) {
+								// Don't trigger if clicking on buttons
+								if (e.target.tagName === 'BUTTON') return;
+								// Close modal first, then use bus stop
+								document.getElementById('favorites-modal').style.display = 'none';
+								setTimeout(() => {
+									useFavoriteBusStop('${stop.id}');
+								}, 100);
+							};
 
 							stopItem.innerHTML = `
 								<div class="favorite-info" style="flex-grow: 1;">
-									<strong>Bus Stop ${stop.id}</strong>
+									<strong>${stop.customName || `Bus Stop ${stop.id}`}</strong>
+									${stop.customName ? `<br><small style="color: #666;">Bus Stop ${stop.id}</small>` : ''}
 									${stop.name ? `<br><small style="color: #666;">${stop.name}</small>` : ''}
 								</div>
 								<div class="favorite-actions" style="display: flex; gap: 8px;">
+									<button class="edit-name-btn" onclick="editBusStopName('${stop.id}')" style="
+										padding: 4px 8px; background: #ffc107; color: #000; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.7rem;
+									">✏️</button>
 									<button class="use-favorite-btn" onclick="useFavoriteBusStop('${stop.id}')" style="
 										padding: 6px 12px; background: #007bff; color: white; border: none;
 										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
@@ -650,11 +689,13 @@
 								<div class="favorite-actions" style="display: flex; gap: 8px;">
 									<button class="add-filter-btn" onclick="addServiceToFilter('${service.no}')" style="
 										padding: 6px 12px; background: #28a745; color: white; border: none;
-										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500;
+										transition: all 0.2s ease;
 									">Add Filter</button>
 									<button class="remove-favorite-btn" onclick="removeBusServiceFavorite('${service.no}')" style="
 										padding: 6px 12px; background: #dc3545; color: white; border: none;
-										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500;
+										transition: all 0.2s ease;
 									">Remove</button>
 								</div>
 							`;
@@ -683,13 +724,14 @@
 					}
 				}
 
-				function toggleFavoritesSection() {
-					const section = document.getElementById('favorites-section');
-					if (section.style.display === 'none') {
-						section.style.display = 'block';
+				function toggleFavoritesModal() {
+					const modal = document.getElementById('favorites-modal');
+					if (modal.style.display === 'none' || modal.style.display === '') {
+						renderFavorites(); // Refresh favorites display
+						modal.style.display = 'flex';
 						document.getElementById('toggleFavorites').textContent = 'Hide Favorites';
 					} else {
-						section.style.display = 'none';
+						modal.style.display = 'none';
 						document.getElementById('toggleFavorites').textContent = 'Show Favorites';
 					}
 				}
@@ -740,6 +782,14 @@
 					}
 				}
 
+				function editBusStopName(busStopId) {
+					const newName = prompt('Enter a custom name for this bus stop (e.g., Work, Home, Office):');
+					if (newName !== null && newName.trim() !== '') {
+						updateBusStopCustomName(busStopId, newName.trim());
+						renderFavorites(); // Refresh the display
+					}
+				}
+
 				// Make favorite functions globally available for onclick handlers
 				window.addBusStopFavorite = addBusStopFavorite;
 				window.removeBusStopFavorite = removeBusStopFavorite;
@@ -747,6 +797,7 @@
 				window.removeBusServiceFavorite = removeBusServiceFavorite;
 				window.useFavoriteBusStop = useFavoriteBusStop;
 				window.addServiceToFilter = addServiceToFilter;
+				window.editBusStopName = editBusStopName;
 				
 				const busIdInput = document.getElementById('busId');
 				const filterBusNoInput = document.querySelector("#filter_bus_no");
@@ -824,16 +875,32 @@
 					});
 
 					// Favorites management buttons
-					document.getElementById('toggleFavorites').addEventListener('click', toggleFavoritesSection);
+					document.getElementById('toggleFavorites').addEventListener('click', toggleFavoritesModal);
 					document.getElementById('showFavoritesBtn').addEventListener('click', function() {
-						const section = document.getElementById('favorites-section');
-						if (section.style.display === 'none' || section.style.display === '') {
+						const modal = document.getElementById('favorites-modal');
+						if (modal.style.display === 'none' || modal.style.display === '') {
 							renderFavorites(); // Refresh favorites display
-							section.style.display = 'block';
+							modal.style.display = 'flex';
 							this.textContent = '⭐ Hide My Favorites';
 						} else {
-							section.style.display = 'none';
+							modal.style.display = 'none';
 							this.textContent = '⭐ Show My Favorites';
+						}
+					});
+
+					// Close modal button
+					document.getElementById('closeFavoritesModal').addEventListener('click', function() {
+						document.getElementById('favorites-modal').style.display = 'none';
+						document.getElementById('toggleFavorites').textContent = 'Show Favorites';
+						document.getElementById('showFavoritesBtn').textContent = '⭐ Show My Favorites';
+					});
+
+					// Close modal on backdrop click
+					document.getElementById('favorites-modal').addEventListener('click', function(e) {
+						if (e.target === this) {
+							this.style.display = 'none';
+							document.getElementById('toggleFavorites').textContent = 'Show Favorites';
+							document.getElementById('showFavoritesBtn').textContent = '⭐ Show My Favorites';
 						}
 					});
 					document.getElementById('clearAllFavorites').addEventListener('click', function() {
