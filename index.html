@@ -465,7 +465,7 @@
 				position: absolute; top: 15px; right: 15px; background: none; border: none;
 				font-size: 1.5rem; cursor: pointer; color: #666; padding: 5px;
 			">×</button>
-			<h2 style="margin-bottom: 20px; font-size: 1.5rem; border-bottom: 1px solid #000; padding-bottom: 10px; color: #000;">⭐ My Favorites</h2>
+			<h2 style="margin-bottom: 20px; font-size: 1.5rem; border-bottom: 1px solid #000; padding-bottom: 10px; color: #000;">⭐ My Bus Stop Favorites</h2>
 
 			<!-- Bus Stop Favorites -->
 			<div class="favorites-group" id="busStopFavorites" style="margin-bottom: 30px;">
@@ -474,6 +474,7 @@
 					<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>
 				</div>
 			</div>
+
 
 
 			<!-- Quick Actions -->
@@ -607,7 +608,10 @@
 				}
 
 				function renderFavorites() {
+					console.log('Rendering favorites...'); // Debug log
 					const favorites = getFavorites();
+					console.log('Favorites data:', favorites); // Debug log
+
 					const favoritesModal = document.getElementById('favorites-modal');
 					const busStopList = document.getElementById('busStopFavoritesList');
 					const busServiceList = document.getElementById('busServiceFavoritesList');
@@ -618,9 +622,13 @@
 						return;
 					}
 
+					// Clear existing content
+					busStopList.innerHTML = '';
+					busServiceList.innerHTML = '';
+
 					// Render bus stop favorites
 					if (favorites.busStops.length > 0) {
-						busStopList.innerHTML = '';
+						console.log('Rendering', favorites.busStops.length, 'bus stop favorites');
 						favorites.busStops.forEach(stop => {
 							const stopItem = document.createElement('div');
 							stopItem.className = 'favorite-item';
@@ -630,13 +638,15 @@
 								border-radius: 6px; margin-bottom: 8px; cursor: pointer;
 								transition: background-color 0.2s ease;
 							`;
+
+							// Use template literal properly for onclick handler
 							stopItem.onclick = function(e) {
 								// Don't trigger if clicking on buttons
 								if (e.target.tagName === 'BUTTON') return;
 								// Close modal first, then use bus stop
 								document.getElementById('favorites-modal').style.display = 'none';
 								setTimeout(() => {
-									useFavoriteBusStop('${stop.id}');
+									useFavoriteBusStop(stop.id);
 								}, 100);
 							};
 
@@ -664,99 +674,17 @@
 							busStopList.appendChild(stopItem);
 						});
 					} else {
+						console.log('No bus stop favorites found');
 						busStopList.innerHTML = '<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>';
 					}
 
-					// Show/hide favorites modal based on whether there are any favorites
-					if (favorites.busStops.length > 0 || favorites.busServices.length > 0) {
+					// Show/hide favorites modal based on whether there are bus stop favorites only
+					if (favorites.busStops.length > 0) {
+						console.log('Showing favorites modal with', favorites.busStops.length, 'bus stop favorites');
 						favoritesModal.style.display = 'flex';
 					} else {
+						console.log('No bus stop favorites found, hiding modal');
 						favoritesModal.style.display = 'none';
-					}
-
-					// Render bus stop favorites
-					if (favorites.busStops.length > 0) {
-						busStopList.innerHTML = '';
-						favorites.busStops.forEach(stop => {
-							const stopItem = document.createElement('div');
-							stopItem.className = 'favorite-item';
-							stopItem.style.cssText = `
-								display: flex; justify-content: space-between; align-items: center;
-								padding: 12px; background: #f8f9fa; border: 1px solid #ddd;
-								border-radius: 6px; margin-bottom: 8px; cursor: pointer;
-								transition: background-color 0.2s ease;
-							`;
-							stopItem.onclick = function(e) {
-								// Don't trigger if clicking on buttons
-								if (e.target.tagName === 'BUTTON') return;
-								// Close modal first, then use bus stop
-								document.getElementById('favorites-modal').style.display = 'none';
-								setTimeout(() => {
-									useFavoriteBusStop('${stop.id}');
-								}, 100);
-							};
-
-							stopItem.innerHTML = `
-								<div class="favorite-info" style="flex-grow: 1;">
-									<strong>${stop.customName || `Bus Stop ${stop.id}`}</strong>
-									${stop.customName ? `<br><small style="color: #666;">Bus Stop ${stop.id}</small>` : ''}
-									${stop.name ? `<br><small style="color: #666;">${stop.name}</small>` : ''}
-								</div>
-								<div class="favorite-actions" style="display: flex; gap: 8px;">
-									<button class="edit-name-btn" onclick="editBusStopName('${stop.id}')" style="
-										padding: 4px 8px; background: #ffc107; color: #000; border: none;
-										border-radius: 4px; cursor: pointer; font-size: 0.7rem;
-									">✏️</button>
-									<button class="use-favorite-btn" onclick="useFavoriteBusStop('${stop.id}')" style="
-										padding: 6px 12px; background: #007bff; color: white; border: none;
-										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
-									">Use</button>
-									<button class="remove-favorite-btn" onclick="removeBusStopFavorite('${stop.id}')" style="
-										padding: 6px 12px; background: #dc3545; color: white; border: none;
-										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
-									">Remove</button>
-								</div>
-							`;
-							busStopList.appendChild(stopItem);
-						});
-					} else {
-						busStopList.innerHTML = '<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>';
-					}
-
-					// Render bus service favorites
-					if (favorites.busServices.length > 0) {
-						busServiceList.innerHTML = '';
-						favorites.busServices.forEach(service => {
-							const serviceItem = document.createElement('div');
-							serviceItem.className = 'favorite-item';
-							serviceItem.style.cssText = `
-								display: flex; justify-content: space-between; align-items: center;
-								padding: 12px; background: #f8f9fa; border: 1px solid #ddd;
-								border-radius: 6px; margin-bottom: 8px;
-							`;
-
-							serviceItem.innerHTML = `
-								<div class="favorite-info" style="flex-grow: 1;">
-									<strong>Bus Service ${service.no}</strong>
-									${service.operator ? `<br><small style="color: #666;">${service.operator}</small>` : ''}
-								</div>
-								<div class="favorite-actions" style="display: flex; gap: 8px;">
-									<button class="add-filter-btn" onclick="addServiceToFilter('${service.no}')" style="
-										padding: 6px 12px; background: #28a745; color: white; border: none;
-										border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500;
-										transition: all 0.2s ease;
-									">Add Filter</button>
-									<button class="remove-favorite-btn" onclick="removeBusServiceFavorite('${service.no}')" style="
-										padding: 6px 12px; background: #dc3545; color: white; border: none;
-										border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500;
-										transition: all 0.2s ease;
-									">Remove</button>
-								</div>
-							`;
-							busServiceList.appendChild(serviceItem);
-						});
-					} else {
-						busServiceList.innerHTML = '<p style="color: #666; font-style: italic;">No favorite bus services yet. When you see a bus service in the results, click the heart icon to add it here.</p>';
 					}
 				}
 
@@ -924,7 +852,7 @@
 						if (modal.style.display === 'none' || modal.style.display === '') {
 							renderFavorites(); // Refresh favorites display
 							modal.style.display = 'flex';
-							this.textContent = '⭐ Hide My Favorites';
+							this.textContent = '⭐ Hide My Bus Stop Favorites';
 						} else {
 							modal.style.display = 'none';
 							this.textContent = '⭐ Show My Favorites';
@@ -1086,6 +1014,7 @@
 						serviceFavBtn.style.cssText = `
 							background: none; border: none; font-size: 1.2rem; cursor: pointer;
 							padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s;
+							vertical-align: top;
 						`;
 						serviceFavBtn.onclick = function(e) {
 							e.stopPropagation();
