@@ -60,7 +60,7 @@
 				border-radius: 10px;
 				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 				width: 90%;
-				max-width: 500px;
+				max-width: 700px;
 				border: 1px solid #000;
 			}
 			
@@ -469,7 +469,6 @@
 
 			<!-- Bus Stop Favorites -->
 			<div class="favorites-group" id="busStopFavorites" style="margin-bottom: 30px;">
-				<h3 style="margin-bottom: 15px; font-size: 1.2rem; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Bus Stop Favorites</h3>
 				<div id="busStopFavoritesList" style="display: flex; flex-direction: column; gap: 10px;">
 					<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>
 				</div>
@@ -614,17 +613,15 @@
 
 					const favoritesModal = document.getElementById('favorites-modal');
 					const busStopList = document.getElementById('busStopFavoritesList');
-					const busServiceList = document.getElementById('busServiceFavoritesList');
 
 					// Check if elements exist before using them
-					if (!favoritesModal || !busStopList || !busServiceList) {
+					if (!favoritesModal || !busStopList) {
 						console.warn('Favorites elements not found in DOM');
 						return;
 					}
 
 					// Clear existing content
 					busStopList.innerHTML = '';
-					busServiceList.innerHTML = '';
 
 					// Render bus stop favorites
 					if (favorites.busStops.length > 0) {
@@ -678,14 +675,8 @@
 						busStopList.innerHTML = '<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>';
 					}
 
-					// Show/hide favorites modal based on whether there are bus stop favorites only
-					if (favorites.busStops.length > 0) {
-						console.log('Showing favorites modal with', favorites.busStops.length, 'bus stop favorites');
-						favoritesModal.style.display = 'flex';
-					} else {
-						console.log('No bus stop favorites found, hiding modal');
-						favoritesModal.style.display = 'none';
-					}
+					// Note: Modal visibility is now controlled only by user interaction (button clicks)
+					// renderFavorites() only renders content, doesn't control modal display
 				}
 
 				function useFavoriteBusStop(busStopId) {
@@ -803,7 +794,7 @@
 					setupEventListeners();
 					fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value);
 					pollingInterval = setInterval(() => fetchAndDisplay(busIdInput.value.trim() || DEFAULT_ID, busNoHidden.value), POLLING_INTERVAL_MS);
-					renderFavorites(); // Initialize favorites display
+					// Note: renderFavorites() is now only called when user clicks the button, not on page load
 				}
 				
 				function refreshTags() {
@@ -852,24 +843,24 @@
 						if (modal.style.display === 'none' || modal.style.display === '') {
 							renderFavorites(); // Refresh favorites display
 							modal.style.display = 'flex';
-							this.textContent = '⭐ Hide My Bus Stop Favorites';
+							// Button text remains constant - always shows "Show My Bus Stop Favorites"
 						} else {
 							modal.style.display = 'none';
-							this.textContent = '⭐ Show My Favorites';
+							// Button text remains constant - always shows "Show My Bus Stop Favorites"
 						}
 					});
 
 					// Close modal button
 					document.getElementById('closeFavoritesModal').addEventListener('click', function() {
 						document.getElementById('favorites-modal').style.display = 'none';
-						document.getElementById('showFavoritesBtn').textContent = '⭐ Show My Favorites';
+						document.getElementById('showFavoritesBtn').textContent = '⭐ Show My Bus Stop Favorites';
 					});
 
 					// Close modal on backdrop click
 					document.getElementById('favorites-modal').addEventListener('click', function(e) {
 						if (e.target === this) {
 							this.style.display = 'none';
-							document.getElementById('showFavoritesBtn').textContent = '⭐ Show My Favorites';
+							// Button text remains constant - always shows "⭐ Show My Bus Stop Favorites"
 						}
 					});
 					document.getElementById('clearAllFavorites').addEventListener('click', function() {
