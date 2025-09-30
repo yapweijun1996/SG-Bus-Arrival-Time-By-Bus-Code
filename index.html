@@ -619,6 +619,55 @@
 						return;
 					}
 
+					// Render bus stop favorites
+					if (favorites.busStops.length > 0) {
+						busStopList.innerHTML = '';
+						favorites.busStops.forEach(stop => {
+							const stopItem = document.createElement('div');
+							stopItem.className = 'favorite-item';
+							stopItem.style.cssText = `
+								display: flex; justify-content: space-between; align-items: center;
+								padding: 12px; background: #f8f9fa; border: 1px solid #ddd;
+								border-radius: 6px; margin-bottom: 8px; cursor: pointer;
+								transition: background-color 0.2s ease;
+							`;
+							stopItem.onclick = function(e) {
+								// Don't trigger if clicking on buttons
+								if (e.target.tagName === 'BUTTON') return;
+								// Close modal first, then use bus stop
+								document.getElementById('favorites-modal').style.display = 'none';
+								setTimeout(() => {
+									useFavoriteBusStop('${stop.id}');
+								}, 100);
+							};
+
+							stopItem.innerHTML = `
+								<div class="favorite-info" style="flex-grow: 1;">
+									<strong>${stop.customName || `Bus Stop ${stop.id}`}</strong>
+									${stop.customName ? `<br><small style="color: #666;">Bus Stop ${stop.id}</small>` : ''}
+									${stop.name ? `<br><small style="color: #666;">${stop.name}</small>` : ''}
+								</div>
+								<div class="favorite-actions" style="display: flex; gap: 8px;">
+									<button class="edit-name-btn" onclick="editBusStopName('${stop.id}')" style="
+										padding: 4px 8px; background: #ffc107; color: #000; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.7rem;
+									">✏️</button>
+									<button class="use-favorite-btn" onclick="useFavoriteBusStop('${stop.id}')" style="
+										padding: 6px 12px; background: #007bff; color: white; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+									">Use</button>
+									<button class="remove-favorite-btn" onclick="removeBusStopFavorite('${stop.id}')" style="
+										padding: 6px 12px; background: #dc3545; color: white; border: none;
+										border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+									">Remove</button>
+								</div>
+							`;
+							busStopList.appendChild(stopItem);
+						});
+					} else {
+						busStopList.innerHTML = '<p style="color: #666; font-style: italic;">No favorite bus stops yet. Search for a bus stop and click the heart icon to add it here.</p>';
+					}
+
 					// Show/hide favorites modal based on whether there are any favorites
 					if (favorites.busStops.length > 0 || favorites.busServices.length > 0) {
 						favoritesModal.style.display = 'flex';
